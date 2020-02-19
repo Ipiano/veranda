@@ -35,6 +35,7 @@ ament_export_dependencies(
     veranda_core_api
     veranda_box2d
     veranda_qt_frontend_plugin_api
+    veranda_qt_frontend
 )
 
 
@@ -60,10 +61,12 @@ function(make_plugin plugin_name plugin_moc_hdrs plugin_srcs)
         "veranda_core_api"
         "veranda_qt_frontend_plugin_api")
 
+    ament_index_get_resource(PLUGIN_PATH "veranda_plugin_path" "veranda_qt_frontend")
+
     ## Install lib into same directory as simulator executable
     install(
       TARGETS ${plugin_name}
-      DESTINATION veranda_plugins
+      DESTINATION ${PLUGIN_PATH}
     )
 endfunction()
 

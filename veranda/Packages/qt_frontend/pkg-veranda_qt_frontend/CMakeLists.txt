@@ -16,6 +16,7 @@ endif()
 
 ## Find required ROS packages
 find_package(ament_cmake REQUIRED)
+find_package(ament_index_cpp REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
@@ -46,6 +47,8 @@ ament_export_dependencies(
     veranda_qt_frontend_plugin_api
     veranda_qt_plugin_api
 )
+
+ament_index_register_resource(veranda_plugin_path CONTENT "${CMAKE_INSTALL_PREFIX}/lib/veranda_qt_frontend")
 
 ###################
 ## FILE LISTINGS ##
@@ -115,6 +118,7 @@ qt5_use_modules(${EXE_NAME} ${QT_COMPONENTS})
 ## Pull in stuff exported from other packages
 ament_target_dependencies(${EXE_NAME}
     "rclcpp"
+    "ament_index_cpp"
     "std_msgs"
     "sensor_msgs"
     "veranda_box2d"
@@ -133,6 +137,12 @@ install(
   TARGETS ${EXE_NAME}
   DESTINATION lib/${PROJECT_NAME}
 )
+
+install(DIRECTORY
+        config
+        launch
+        DESTINATION share/${PROJECT_NAME}/
+        )
 
 ## On windows, we need to run windeployqt
 ## To set up plugins and dlls because Windows
