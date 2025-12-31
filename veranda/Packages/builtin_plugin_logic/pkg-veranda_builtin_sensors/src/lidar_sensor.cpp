@@ -245,7 +245,7 @@ void Lidar_Sensor::_worldTicked(const double dt)
 
             if(_sendChannel)
             {
-                _sendChannel->publish(data);
+                _sendChannel->publish(*data);
             }
 
             //Force lines to be redrawn

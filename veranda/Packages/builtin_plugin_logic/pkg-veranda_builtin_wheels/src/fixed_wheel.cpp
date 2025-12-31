@@ -11,7 +11,7 @@ Fixed_Wheel::Fixed_Wheel(const QString& pluginIID, QObject *parent)
     , _pluginIID(pluginIID)
 
 {
-    qRegisterMetaType<std_msgs::msg::Float32::SharedPtr>("std_msgs::msg::Float32::SharedPtr");
+    qRegisterMetaType<std::shared_ptr<const std_msgs::msg::Float32>>("std::shared_ptr<const std_msgs::msg::Float32>");
 
     //Update channel in if name or driven status changes
     connect(&_inputChannel, &Property::valueSet, this, &Fixed_Wheel::_refreshChannel);
@@ -150,12 +150,12 @@ void Fixed_Wheel::_connectChannels()
         if(inputChannel.size())
         {
             auto callback =
-            [this](const std_msgs::msg::Float32::SharedPtr msg) -> void
+            [this](const std::shared_ptr<const std_msgs::msg::Float32> msg) -> void
             {
                 _receiveMessage(msg);
             };
 
-            _receiveChannel = _rosNode->create_subscription<std_msgs::msg::Float32>(inputChannel.toStdString(), callback);
+            _receiveChannel = _rosNode->create_subscription<std_msgs::msg::Float32>(inputChannel.toStdString(), 10, callback);
 
             //qDebug() << "Channel: " << inputChannel << " created: " << _receiveChannel.get();
         }
@@ -197,7 +197,7 @@ void Fixed_Wheel::_worldTicked(const double)
     }
 }
 
-void Fixed_Wheel::_processMessage(const std_msgs::msg::Float32::SharedPtr data)
+void Fixed_Wheel::_processMessage(std::shared_ptr<const std_msgs::msg::Float32> data)
 {
     _targetAngularVelocity = static_cast<double>(data->data);
 }

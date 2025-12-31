@@ -46,7 +46,11 @@ int main(int argc, char** argv)
     *************************************/
     //Init ros stuff
     rclcpp::init(argc, argv);
-    shared_ptr<rclcpp::Node> node = make_shared<rclcpp::Node>("veranda");
+
+    rclcpp::NodeOptions options;
+    shared_ptr<rclcpp::Node> node = make_shared<rclcpp::Node>("veranda",
+        options.allow_undeclared_parameters(true)
+               .automatically_declare_parameters_from_overrides(true));
 
     //Init Qt
     QApplication app(argc, argv);

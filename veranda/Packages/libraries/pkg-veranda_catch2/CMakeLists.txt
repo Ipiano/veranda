@@ -1,7 +1,7 @@
 ###########
 ## SETUP ##
 ###########
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.16)
 
 set(PROJECT_NAME veranda_catch2)
 set(HEADER_INSTALL_DIR include/${PROJECT_NAME})

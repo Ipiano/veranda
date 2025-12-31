@@ -84,7 +84,7 @@ void Encoder::_worldTicked(const double dt)
 
             _sendMessage->data = static_cast<float>(angularNoisy);
 
-            _sendChannel->publish(_sendMessage);
+            _sendChannel->publish(*_sendMessage);
         }
     }
 }

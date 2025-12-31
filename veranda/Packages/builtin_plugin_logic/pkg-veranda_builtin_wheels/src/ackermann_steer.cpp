@@ -9,7 +9,7 @@ Ackermann_Steer::Ackermann_Steer(const QString& pluginIID, QObject *parent)
     : WorldObjectComponent("Ackermann Steer", "Wheels", parent)
     , _pluginIID(pluginIID)
 {
-    qRegisterMetaType<std_msgs::msg::Float32::SharedPtr>("std_msgs::msg::Float32::SharedPtr");
+    qRegisterMetaType<std::shared_ptr<const std_msgs::msg::Float32>>("std::shared_ptr<const std_msgs::msg::Float32>");
 
     //Update channel in if name or driven status changes
     connect(&_inputChannel, &Property::valueSet, this, &Ackermann_Steer::_refreshChannel);
@@ -246,11 +246,11 @@ void Ackermann_Steer::_connectChannels()
         if(inputChannel.size())
         {
             auto callback =
-            [this](const std_msgs::msg::Float32::SharedPtr msg) -> void
+            [this](const std::shared_ptr<const std_msgs::msg::Float32> msg) -> void
             {
                 _receiveMessage(msg);
             };
-            _receiveChannel = _rosNode->create_subscription<std_msgs::msg::Float32>(inputChannel.toStdString(), callback);
+            _receiveChannel = _rosNode->create_subscription<std_msgs::msg::Float32>(inputChannel.toStdString(), 10, callback);
         }
     }
 }
@@ -303,7 +303,7 @@ void Ackermann_Steer::_worldTicked(const double)
     }
 }
 
-void Ackermann_Steer::_processMessage(const std_msgs::msg::Float32::SharedPtr data)
+void Ackermann_Steer::_processMessage(std::shared_ptr<const std_msgs::msg::Float32> data)
 {
     const std::function<double(const double&)> acot = [](const double& x){return PI/2 - atan(x);};
 

@@ -199,7 +199,7 @@ void GPS_Sensor::_worldTicked(const double dt)
 
             if(_sendChannel)
             {
-                _sendChannel->publish(data);
+                _sendChannel->publish(*data);
             }
 
             _timeSincePublish = 0;
