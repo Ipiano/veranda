@@ -1,7 +1,7 @@
 ###########
 ## SETUP ##
 ###########
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.16)
 
 set(PROJECT_NAME veranda_box2d)
 set(HEADER_INSTALL_DIR include/${PROJECT_NAME})
@@ -18,7 +18,8 @@ project(${PROJECT_NAME})
 
 ## Compile as C++11 Library
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_definitions(-DBOX2D_DLL)
 find_package(ament_cmake REQUIRED)

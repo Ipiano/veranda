@@ -186,14 +186,14 @@ signals:
      * \brief Signals that a ROS message has been recieved
      * \param[in] data The Float32 data message
      */
-    void _receiveMessage(const std_msgs::msg::Float32::SharedPtr data);
+    void _receiveMessage(std::shared_ptr<const std_msgs::msg::Float32> data);
 
 private slots:
     /*!
      * \brief Adjusts steering angles based on input messages
      * \param[in] data The input steering message
      */
-    void _processMessage(const std_msgs::msg::Float32::SharedPtr data);
+    void _processMessage(std::shared_ptr<const std_msgs::msg::Float32> data);
 
     //! Closes and re-opens the ROS channel
     void _refreshChannel();

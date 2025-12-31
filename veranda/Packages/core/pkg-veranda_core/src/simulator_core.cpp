@@ -73,7 +73,7 @@ _physicsEngine(physics), _userInterface(ui), _node(node)
     {
         _timestampMsg->data[0] += elapsed;
         _timestampMsg->data[1] = elapsed;
-        _timestampChannel->publish(_timestampMsg);
+        _timestampChannel->publish(*_timestampMsg);
     });
 }
 
@@ -178,7 +178,7 @@ void SimulatorCore::joystickMoved(double x, double y, double z, QString channel)
 
     if(joystick._channel)
     {
-        joystick._channel->publish(joystick._message);
+        joystick._channel->publish(*joystick._message);
     }
 }
 
@@ -195,7 +195,7 @@ void SimulatorCore::joystickButtonDown(int button, QString channel)
 
     if(joystick._channel)
     {
-        joystick._channel->publish(joystick._message);
+        joystick._channel->publish(*joystick._message);
     }
 }
 
@@ -212,7 +212,7 @@ void SimulatorCore::joystickButtonUp(int button, QString channel)
 
     if(joystick._channel)
     {
-        joystick._channel->publish(joystick._message);
+        joystick._channel->publish(*joystick._message);
     }
 }
 

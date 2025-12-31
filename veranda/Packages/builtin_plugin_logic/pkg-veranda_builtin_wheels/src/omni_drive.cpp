@@ -13,7 +13,7 @@ Omni_Drive::Omni_Drive(const QString& pluginIID, QObject *parent)
 #undef pview
     , _pluginIID(pluginIID)
 {
-    qRegisterMetaType<geometry_msgs::msg::Pose2D::SharedPtr>("geometry_msgs::msg::Pose2D::SharedPtr");
+    qRegisterMetaType<std::shared_ptr<const geometry_msgs::msg::Pose2D>>("std::shared_ptr<const geometry_msgs::msg::Pose2D>");
 
     //Update channel in if name or driven status changes
     connect(&_inputChannel, &Property::valueSet, this, &Omni_Drive::_refreshChannel);
@@ -149,12 +149,12 @@ void Omni_Drive::_connectChannels()
             if(inputChannel.size())
             {
                 auto callback =
-                [this](const geometry_msgs::msg::Pose2D::SharedPtr msg) -> void
+                [this](const std::shared_ptr<const geometry_msgs::msg::Pose2D> msg) -> void
                 {
                     _receiveMessage(msg);
                 };
 
-                _receiveChannel = _rosNode->create_subscription<geometry_msgs::msg::Pose2D>(inputChannel.toStdString(), callback);
+                _receiveChannel = _rosNode->create_subscription<geometry_msgs::msg::Pose2D>(inputChannel.toStdString(), 10, callback);
 
                 //qDebug() << "Channel: " << inputChannel << " created: " << _receiveChannel.get();
             }
@@ -231,13 +231,13 @@ void Omni_Drive::_worldTicked(const double dt)
                 newMsg->x = report_filter.apply() + linVelocity.x;
                 newMsg->y = report_filter.apply() + linVelocity.y;
 
-                _publishChannel->publish(newMsg);
+                _publishChannel->publish(*newMsg);
             }
         }
     }
 }
 
-void Omni_Drive::_processMessage(const geometry_msgs::msg::Pose2D::SharedPtr data)
+void Omni_Drive::_processMessage(std::shared_ptr<const geometry_msgs::msg::Pose2D> data)
 {
     _targetAngularVelocity = static_cast<double>(data->theta);
     _targetXVelocity = static_cast<double>(data->x);

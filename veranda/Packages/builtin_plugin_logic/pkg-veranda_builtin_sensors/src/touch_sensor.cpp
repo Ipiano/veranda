@@ -281,7 +281,7 @@ void Touch_Sensor::_worldTicked(const double)
 
         if(anyChange && _sendChannel)
         {
-            _sendChannel->publish(data);
+            _sendChannel->publish(*data);
         }
     }
 }

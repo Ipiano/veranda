@@ -186,14 +186,14 @@ signals:
      * \brief Signals that a ROS message has been recieved
      * \param[in] data The Pose2D data message
      */
-    void _receiveMessage(const geometry_msgs::msg::Pose2D::SharedPtr data);
+    void _receiveMessage(std::shared_ptr<const geometry_msgs::msg::Pose2D> data);
 
 private slots:
     /*!
      * \brief Stores the target velocities read from ROS
      * \param data The new velocity
      */
-    void _processMessage(const geometry_msgs::msg::Pose2D::SharedPtr data);
+    void _processMessage(std::shared_ptr<const geometry_msgs::msg::Pose2D> data);
 
     //! Closes and re-opens the ROS channel
     void _refreshChannel(QVariant);
