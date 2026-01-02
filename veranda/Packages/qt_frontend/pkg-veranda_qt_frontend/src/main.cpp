@@ -55,41 +55,23 @@ int main(int argc, char** argv)
     //Init Qt
     QApplication app(argc, argv);
 
-    //Start ros in separate thread, and trigger Qt shutdown when it exits
-    //If Qt exits before ros, be sure to shutdown ros
+    //Start ros in separate thread, and trigger Qt shutdown when it exits If Qt
+    //exits before ros, be sure to shutdown ros
+    //
+    //@note This isn't valid in early versions of ROS 2 - starting with at
+    //minimum Humble, it's safe to create and destroy subscribers in any thread.
+    //
+    //Subscribers need to be sure that it's safe to handle an incoming message
+    //on a background thread. In most cases, this will just translate to emitting
+    //a signal and handling that slot on the main event loop thread; but in
+    //special cases, it may be necessary for a component to handle the message
+    //immediately in the ROS thread.
 
-    //Removed for now because multi-threading isn't stable in ROS2 yet
-    //Replaced by timer below
-
-    
-    /*-----------------ORIGINAL MULTITHREADING------------------
     QFutureWatcher<void> rosThread;
-    rosThread.setFuture(QtConcurrent::run([node](){rclcpp::spin(node);}));
+    rosThread.setFuture(QtConcurrent::run([node]() { rclcpp::spin(node); }));
     QObject::connect(&rosThread, &QFutureWatcher<void>::finished, &app, &QCoreApplication::quit);
-    QObject::connect(&app, &QCoreApplication::aboutToQuit, [](){rclcpp::shutdown();});
-    */
-    //-----------------TIMER REPLACEMENT HACK--------------------
-    //TODO: Remove when ROS2 is threadsafe
-    //and it is safe to spin() in one thread and create/destroy publishers/subscribers
-    //from another
-    QTimer spinTimer;
-    spinTimer.setInterval(30);
-    spinTimer.setTimerType(Qt::PreciseTimer);
-    QObject::connect(&spinTimer, &QTimer::timeout,
-    [&]()
-    {
-        if(!rclcpp::ok())
-        {
-            spinTimer.stop();
-            app.quit();
-        }
-        else
-        {
-            rclcpp::spin_some(node);
-        }
-    });
-    QObject::connect(&app, &QCoreApplication::aboutToQuit, [](){rclcpp::shutdown();});
-    spinTimer.start();
+    QObject::connect(&app, &QCoreApplication::aboutToQuit, []() { rclcpp::shutdown(); });
+
     //-----------------------------------------------------------
 
    /*************************************
