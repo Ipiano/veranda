@@ -203,7 +203,7 @@ def main():
     rclpy.init()
     node = Node("joystick_" + joyname)
 
-    pubjoy = node.create_publisher(Joy, joyname + '/joystick')
+    pubjoy = node.create_publisher(Joy, joyname + '/joystick', 10)
 
     simTime = SimTimer(False, "veranda/timestamp", node)
     

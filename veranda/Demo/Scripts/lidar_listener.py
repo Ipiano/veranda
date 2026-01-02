@@ -21,7 +21,7 @@ def main():
     rclpy.init(args=args)
 
     node = Node("lidar_snooper")
-    node.create_subscription(LaserScan, channel, lidar_callback)
+    node.create_subscription(LaserScan, channel, lidar_callback, 10)
     rclpy.spin(node)
 
     node.destroy_node()

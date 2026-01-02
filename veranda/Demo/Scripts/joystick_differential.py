@@ -40,8 +40,8 @@ def main():
     rclpy.init(args=args)
 
     node = Node("joystick_differential")
-    publeft = node.create_publisher(Float32, channelout + "/left_wheel")
-    pubright = node.create_publisher(Float32, channelout + "/right_wheel")
+    publeft = node.create_publisher(Float32, channelout + "/left_wheel", 10)
+    pubright = node.create_publisher(Float32, channelout + "/right_wheel", 10)
 
     def joystick_callback(msg):
         if len(msg.axes) < 2:
@@ -57,7 +57,7 @@ def main():
 
         publishWheelVelocity(publeft, pubright, phi1, phi2)
 
-    node.create_subscription(Joy, channelin, joystick_callback)
+    node.create_subscription(Joy, channelin, joystick_callback, 10)
 
     rclpy.spin(node)
     node.destroy_node()
