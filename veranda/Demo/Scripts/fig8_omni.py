@@ -23,7 +23,7 @@ def main():
     rclpy.init()
     node = Node("talker")
 
-    pub = node.create_publisher(Pose2D, 'robot0/target_velocity')
+    pub = node.create_publisher(Pose2D, 'robot0/target_velocity', 10)
 
     simTime = SimTimer(True, "veranda/timestamp", node)
     

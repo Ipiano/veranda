@@ -56,8 +56,8 @@ def main():
     rclpy.init()
     node = Node("talker")
 
-    publeft = node.create_publisher(Float32, 'robot0/left_wheel')
-    pubright = node.create_publisher(Float32, 'robot0/right_wheel')
+    publeft = node.create_publisher(Float32, 'robot0/left_wheel', 10)
+    pubright = node.create_publisher(Float32, 'robot0/right_wheel', 10)
 
     simTime = SimTimer(True, "veranda/timestamp", node)
     

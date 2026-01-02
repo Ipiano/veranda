@@ -21,7 +21,7 @@ def main():
     rclpy.init(args=args)
 
     node = Node("joystick_snooper")
-    node.create_subscription(Joy, channel, joystick_callback)
+    node.create_subscription(Joy, channel, joystick_callback, 10)
     rclpy.spin(node)
 
     node.destroy_node()
