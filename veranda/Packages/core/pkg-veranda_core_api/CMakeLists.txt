@@ -1,7 +1,7 @@
 ###########
 ## SETUP ##
 ###########
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.16)
 
 set(PROJECT_NAME veranda_core_api)
 set(HEADER_INSTALL_DIR include/${PROJECT_NAME})
@@ -16,7 +16,7 @@ endif()
 
 project(${PROJECT_NAME})
 
-## Compile as C++11
+## Compile as C++17
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -30,13 +30,17 @@ find_package(veranda_box2d REQUIRED)
 find_package(rclcpp REQUIRED)
 
 ## Find and configure QT
+## Qt 5.15 LTS is the latest Qt 5 version with long-term support
 set(QT_COMPONENTS Core Gui Widgets)
-find_package(Qt5 REQUIRED COMPONENTS
+find_package(Qt5 5.12 REQUIRED COMPONENTS
     ${QT_COMPONENTS}
 )
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
+
+## Enable Qt deprecation warnings to prepare for future Qt 6 migration
+add_compile_definitions(QT_DEPRECATED_WARNINGS)
 
 include_directories( include ${CMAKE_BINARY_DIR} )
 
@@ -88,17 +92,26 @@ endif()
 qt5_wrap_cpp(MOC_SRCS ${MOC_HDRS})
 
 ## Build Library
-add_definitions(-DVERANDA_CORE_API_BUILD_DLL)
 add_library(${PROJECT_NAME} SHARED ${CPP_SRCS} ${MOC_SRCS})
 
-## Add qt module dependencies to library
-## this will find all the headers and link all the libraries
-qt5_use_modules(${PROJECT_NAME} ${QT_COMPONENTS})
+target_compile_definitions(${PROJECT_NAME}
+    PRIVATE
+        VERANDA_CORE_API_BUILD_DLL
+)
 
 ## Pull in stuff exported from other packages
 ament_target_dependencies(${PROJECT_NAME}
-    "veranda_box2d"
-    "rclcpp"
+    PUBLIC
+        "veranda_box2d"
+        "rclcpp"
+)
+
+## Link Qt modules using modern target-based approach
+target_link_libraries(${PROJECT_NAME}
+    PUBLIC
+        Qt5::Core
+        Qt5::Gui
+        Qt5::Widgets
 )
 
 #############
@@ -129,16 +142,16 @@ if(BUILD_TESTING)
     ament_add_catch_test(
         "model_datatype_tests"
         CPP_SOURCES tests/test_model.cpp
-        QT_HEADERS ${HEADERS_DIR}/api/model.h
         QT_LIBS Core Gui
+        LIBS ${PROJECT_NAME}
         ROS_LIBS "veranda_box2d"
         )
 
     ament_add_catch_test(
         "property_datatype_tests"
         CPP_SOURCES tests/test_property.cpp
-        QT_HEADERS ${HEADERS_DIR}/api/property.h
         QT_LIBS Core Gui
+        LIBS ${PROJECT_NAME}
         )
 endif()
 
