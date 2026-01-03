@@ -9,9 +9,24 @@ This document outlines the work required to upgrade Veranda from Qt 5 to Qt 6.
 
 ## Current State
 
-- **Current Qt Version**: Qt 5 (5.10+ required, 5.15 LTS recommended)
+- **Current Qt Version**: Qt 5.12+ required (5.15 LTS on Linux, 5.12 minimum for Windows/macOS per ROS Jazzy)
 - **Target Qt Version**: Qt 6.x (6.5 LTS or 6.6+ recommended)
-- **Build Systems**: CMake (primary), QMake .pro files (IDE support only)
+- **Build Systems**: CMake 3.16+ (primary), QMake .pro files (IDE support only)
+
+### Completed Work
+
+The following Phase 1 preparation tasks have been completed:
+
+- ✅ Updated minimum Qt version from 5.10 to 5.12 across all packages
+- ✅ Enabled `QT_DEPRECATED_WARNINGS` in all CMakeLists.txt
+- ✅ Replaced deprecated `qt5_use_modules()` with `target_link_libraries(Qt5::Core, etc.)`
+- ✅ Replaced `add_definitions()` with `target_compile_definitions()`
+- ✅ Used generator expressions for platform-specific defines (e.g., `$<$<PLATFORM_ID:Windows>:WINDOWS>`)
+- ✅ Updated CMake minimum version to 3.16
+- ✅ Updated C++ standard to C++17
+- ✅ Migrated `QRegExp` to `QRegularExpression` in mode_controller.cpp
+- ✅ Added explicit `qt5_wrap_cpp()` for header-only QObject classes (Model, Property, PropertyView)
+- ✅ Updated `ament_cmake_add_catch_test.cmake` to use modern `target_link_libraries()`
 
 ### Qt Modules Currently Used
 
@@ -402,23 +417,23 @@ Qt 6 changes the default high DPI scaling behavior.
 
 ## Migration Strategy
 
-### Phase 1: Preparation (Qt 5.15)
+### Phase 1: Preparation (Qt 5.15) ✅ COMPLETED
 
-1. [ ] Update to Qt 5.15 if not already
-2. [ ] Enable deprecation warnings
-3. [ ] Fix all deprecation warnings
-4. [ ] Update CMake to use modern patterns (AUTOMOC, target_link_libraries)
+1. [x] Update to Qt 5.12+ (minimum for ROS Jazzy Windows compatibility)
+2. [x] Enable deprecation warnings (`QT_DEPRECATED_WARNINGS`)
+3. [x] Fix deprecation warnings (migrated QRegExp → QRegularExpression)
+4. [x] Update CMake to use modern patterns (target_link_libraries, target_compile_definitions)
 
-### Phase 2: CMake Updates
+### Phase 2: CMake Updates (Partially Complete)
 
-1. [ ] Create version-agnostic CMake find_package patterns
-2. [ ] Replace all `qt5_*` functions with version-agnostic equivalents
-3. [ ] Update all `qt5_use_modules()` to `target_link_libraries()`
-4. [ ] Update C++ standard to C++17
+1. [ ] Create version-agnostic CMake find_package patterns (for Qt5/Qt6 compatibility)
+2. [x] Replace deprecated `qt5_use_modules()` with `target_link_libraries()`
+3. [x] Update C++ standard to C++17
+4. [ ] Replace `qt5_wrap_cpp()` with version-agnostic equivalents (currently using explicit qt5_wrap_cpp for header-only QObjects)
 
-### Phase 3: Code Changes
+### Phase 3: Code Changes (Partially Complete)
 
-1. [ ] Migrate `QRegExp` to `QRegularExpression`
+1. [x] Migrate `QRegExp` to `QRegularExpression` (mode_controller.cpp)
 2. [ ] Verify `QtConcurrent::run()` calls
 3. [ ] Audit and update `qRegisterMetaType` calls
 4. [ ] Fix any `QVariant::type()` usage
