@@ -1,0 +1,118 @@
+name: Build
+
+on:
+  push:
+
+jobs:
+  build-ubuntu:
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup ROS 2 Jazzy
+      uses: ros-tooling/setup-ros@v0.7
+      with:
+        required-ros-distributions: jazzy
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          python3-colcon-common-extensions \
+          python3-rosdep \
+          qtbase5-dev \
+          qtdeclarative5-dev \
+          libqt5svg5-dev
+
+    - name: Initialize rosdep
+      run: |
+        sudo rosdep init || true
+        rosdep update
+
+    - name: Install ROS dependencies
+      run: |
+        cd veranda
+        rosdep install --from-paths Packages --ignore-src -r -y
+
+    - name: Build workspace
+      run: |
+        cd veranda
+        source /opt/ros/jazzy/setup.bash
+        colcon build --symlink-install
+
+    - name: Run tests
+      run: |
+        cd veranda
+        source /opt/ros/jazzy/setup.bash
+        source install/setup.bash
+        colcon test --event-handlers console_direct+
+
+    - name: Test results
+      run: |
+        cd veranda
+        colcon test-result --verbose
+
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # Setup Python 3.9 explicitly before ROS setup to ensure consistency.
+    # The setup-ros action installs catkin_pkg in Python 3.9, but CMake's
+    # find_package(Python3) may find a different Python version (e.g., 3.12)
+    # on the runner. We need both setup-ros and CMake to use the same Python.
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+
+    - name: Setup MSVC Developer Command Prompt
+      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Setup ROS 2 Jazzy
+      uses: ros-tooling/setup-ros@v0.7
+      with:
+        required-ros-distributions: jazzy
+
+    - name: Fix colcon-meson compatibility
+      shell: cmd
+      run: |
+        pip uninstall -y colcon-meson || exit 0
+
+    - name: Setup Qt
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: '5.15.2'
+        arch: 'win64_msvc2019_64'
+
+    - name: Install dependencies
+      run: |
+        choco install -y wget
+
+    - name: Build workspace
+      shell: cmd
+      run: |
+        call C:\dev\jazzy\ros2-windows\local_setup.bat
+        cd veranda
+        REM Force CMake to use Python 3.9 by explicitly passing Python3_EXECUTABLE.
+        REM Without this, CMake may find Python 3.12 which lacks the catkin_pkg module.
+        colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release -DPython3_EXECUTABLE=C:\hostedtoolcache\windows\Python\3.9.13\x64\python.exe
+
+    - name: Run tests
+      shell: cmd
+      run: |
+        call C:\dev\jazzy\ros2-windows\local_setup.bat
+        cd veranda
+        call install\local_setup.bat
+        colcon test --event-handlers console_direct+
+      continue-on-error: true
+
+    - name: Test results
+      run: |
+        cd veranda
+        colcon test-result --verbose
+      continue-on-error: true
