@@ -4,6 +4,13 @@
 
 This document proposes decoupling Veranda's component implementations from direct ROS2 dependencies, enabling unit testing without ROS2 infrastructure and supporting alternative communication backends.
 
+> **Related documents**:
+> - [TODO.md](TODO.md) - Phase 2.3 (Improve component testability)
+> - [TODO_update_ros.md](TODO_update_ros.md) - ROS2 Jazzy upgrade (complete this first)
+> - [TODO_modern_ros.md](TODO_modern_ros.md) - Modern ROS2 threading patterns
+>
+> **Note**: This refactor should be done **after** completing the ROS2 Jazzy upgrade to avoid doing work twice.
+
 ## Current State
 
 ### Tight Coupling Problem
@@ -774,21 +781,21 @@ TEST_CASE("Sensor does not crash without channel factory") {
 }
 ```
 
-## Migration Plan
+## Implementation Phases
 
-### Phase 1: Interface Definition (Week 1)
+### Phase 1: Interface Definition
 
 1. Create `channel_interfaces.h` with abstract interfaces
 2. Define Veranda-native message types
 3. Create mock implementation for testing
 
-### Phase 2: ROS2 Backend (Week 1-2)
+### Phase 2: ROS2 Backend
 
 1. Implement `Ros2ChannelFactory`
 2. Add message conversion functions
 3. Ensure API compatibility with existing behavior
 
-### Phase 3: Component Migration (Week 2-3)
+### Phase 3: Component Migration
 
 Migrate components one at a time:
 
@@ -805,14 +812,14 @@ For each component:
 3. Write unit tests with mock factory
 4. Verify integration still works
 
-### Phase 4: Integration (Week 3)
+### Phase 4: Integration
 
 1. Update `SimulatorCore` to create and inject factory
 2. Update `main.cpp` to create appropriate factory
 3. Remove deprecated `setROSNode()` pattern
 4. Integration testing
 
-### Phase 5: Additional Backends (Optional, Week 4+)
+### Phase 5: Additional Backends (Optional)
 
 1. Recording backend (save messages to file)
 2. Replay backend (playback recorded messages)

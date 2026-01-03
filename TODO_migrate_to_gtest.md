@@ -2,6 +2,10 @@
 
 This document outlines the work required to migrate the Veranda test suite from Catch2 to GoogleTest.
 
+> **Related documents**:
+> - [TODO.md](TODO.md) - Phase 4.3 (Optional GoogleTest migration)
+> - **Note**: This migration is marked as **very low priority** given the small test suite (only 2 test files)
+
 ## Current State
 
 | Aspect | Details |
@@ -194,16 +198,15 @@ ASSERT_THAT(value, ::testing::DoubleNear(expected, 1e-10));
 
 ---
 
-## Effort Summary
+## Task Breakdown
 
-| Task | Estimated Hours |
-|------|-----------------|
-| New GoogleTest package setup | 1-2 |
-| Rewrite CMake macro | 2-3 |
-| Convert `test_model.cpp` | 2-3 |
-| Convert `test_property.cpp` | 2-3 |
-| Testing and debugging | 1-2 |
-| **Total** | **8-13** |
+| Task |
+|------|
+| New GoogleTest package setup |
+| Rewrite CMake macro |
+| Convert `test_model.cpp` |
+| Convert `test_property.cpp` |
+| Testing and debugging |
 
 ---
 

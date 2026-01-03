@@ -1,10 +1,28 @@
-# ROS 2 Upgrade Plan: Crystal → Jazzy Jalisco
+# ROS 2 Upgrade Plan: Ardent → Jazzy Jalisco
 
-This document outlines the work required to upgrade Veranda from ROS 2 Crystal to ROS 2 Jazzy Jalisco (the latest LTS release).
+## ✅ STATUS: UPGRADE COMPLETED
 
-## Current State
+The ROS 2 upgrade to Jazzy Jalisco has been completed. This document is retained for historical reference.
 
-- **Master branch**: Targets ROS 2 Crystal (using ament build)
+**What was completed:**
+- All API changes required for Jazzy compatibility
+- Removed the `spin_some()` timer hack - now uses background thread spinning
+- Updated `qRegisterMetaType` registrations for cross-thread signal/slot
+
+**What was NOT completed (see Phase 2 in TODO.md):**
+- Advanced ROS2 features (MultiThreadedExecutor, callback groups, QoS profiles, lifecycle nodes)
+- These are optional improvements described in [TODO_modern_ros.md](TODO_modern_ros.md)
+
+---
+
+> **Related documents**:
+> - [TODO.md](TODO.md) - Phase 1.1 (ROS2 upgrade to Jazzy) ✅
+> - [TODO_modern_ros.md](TODO_modern_ros.md) - Modern ROS2 threading (optional improvements)
+> - [TODO_component_ros_separation.md](TODO_component_ros_separation.md) - Component testability improvements
+
+## Original State (Historical)
+
+- **Master branch**: Targeted ROS 2 Ardent Apalone (2017, long EOL)
 - **Target**: ROS 2 Jazzy Jalisco (May 2024, LTS until May 2029)
 
 ### Existing Upgrade Work
@@ -350,17 +368,16 @@ After upgrade, verify:
 
 ---
 
-## Estimated Effort
+## Implementation Phases
 
-| Phase | Description | Effort |
-|-------|-------------|--------|
-| 1. Merge hygum/foxy | Rebase or merge foxy branch to master | 1-2 hours |
-| 2. C++17 + CMake | Update all CMakeLists.txt files | 2-4 hours |
-| 3. Callback signatures | Fix subscription callback types | 4-6 hours |
-| 4. Testing | Build, run, debug on Jazzy | 8-16 hours |
-| 5. Documentation | Update README, CLAUDE.md | 1-2 hours |
-
-**Total**: 2-4 days for experienced ROS 2 developer
+| Phase | Description |
+|-------|-------------|
+| 1. Evaluate hygum/foxy | Review existing upgrade work |
+| 2. C++17 + CMake | Update all CMakeLists.txt files |
+| 3. API updates | Fix deprecated and changed APIs |
+| 4. Callback signatures | Fix subscription callback types |
+| 5. Testing | Build, run, debug on Jazzy |
+| 6. Documentation | Update README, CLAUDE.md |
 
 ---
 

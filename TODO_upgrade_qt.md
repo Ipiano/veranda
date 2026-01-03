@@ -2,6 +2,11 @@
 
 This document outlines the work required to upgrade Veranda from Qt 5 to Qt 6.
 
+> **Related documents**:
+> - [TODO.md](TODO.md) - Phase 1.2 (Bare bones Qt6 upgrade)
+> - [TODO_modern_qt6.md](TODO_modern_qt6.md) - Phase 2.5 (Qt6 modernization post-upgrade)
+> - [TODO_modernize_cmake.md](TODO_modernize_cmake.md) - CMake modernization required for Qt6
+
 ## Current State
 
 - **Current Qt Version**: Qt 5 (5.10+ required, 5.15 LTS recommended)
@@ -488,17 +493,17 @@ greaterThan(QT_MAJOR_VERSION, 5): QT += core5compat  # If using Qt5Compat
 
 ---
 
-## Estimated Effort
+## Implementation Phases
 
-| Phase | Description | Effort |
-|-------|-------------|--------|
-| 1. CMake updates | All CMakeLists.txt files | 4-6 hours |
-| 2. QRegExp migration | mode_controller.cpp | 30 minutes |
-| 3. Other code changes | Various files | 2-4 hours |
-| 4. Testing & debugging | Full application | 8-16 hours |
-| 5. .pro file updates | Optional | 1-2 hours |
+This upgrade should be done in phases:
 
-**Total**: 1-3 days for experienced Qt developer
+| Phase | Description |
+|-------|-------------|
+| 1. CMake updates | All CMakeLists.txt files |
+| 2. QRegExp migration | mode_controller.cpp |
+| 3. Other code changes | Various files |
+| 4. Testing & debugging | Full application |
+| 5. .pro file updates | Optional |
 
 ---
 

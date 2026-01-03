@@ -2,7 +2,13 @@
 
 ## Overview
 
-This document proposes upgrading Veranda from Qt 5.x to Qt 6, leveraging new features for improved performance, cleaner code, and better maintainability.
+This document proposes leveraging Qt 6-specific features **after** completing the basic Qt 6 upgrade for improved performance, cleaner code, and better maintainability.
+
+> **Related documents**:
+> - [TODO.md](TODO.md) - Phase 2.5 (Qt6 modernization post-upgrade)
+> - [TODO_upgrade_qt.md](TODO_upgrade_qt.md) - Phase 1.2 (Bare bones Qt6 upgrade - **must be done first**)
+>
+> **Important**: This document covers Qt6 **modernization** features to leverage after the initial upgrade is complete. First complete the bare bones upgrade from TODO_upgrade_qt.md.
 
 ## Current State
 
@@ -394,28 +400,21 @@ void QGraphicsSimulationViewer::setupOptimizations() {
 
 ### Migration Steps
 
-#### Phase 1: CMake Modernization (Days 1-2)
+#### Phase 1: Basic Qt6 Features
 
-1. Update all CMakeLists.txt to Qt 6 style
-2. Add Qt 5/6 compatibility layer
-3. Enable AUTOMOC, AUTOUIC, AUTORCC
-4. Test build with both Qt versions
-
-#### Phase 2: API Updates (Days 3-5)
-
-1. Replace deprecated Qt 5 APIs
-2. Update container usage (QVector → QList)
-3. Fix signal/slot connection syntax
-4. Update QVariant conversions (Qt 6 is stricter)
-
-#### Phase 3: Graphics Optimizations (Days 6-7)
-
-1. Add OpenGL viewport option
-2. Implement scene indexing
+1. Add OpenGL viewport option for graphics acceleration
+2. Implement scene indexing for large simulations
 3. Optimize paint events
 4. Add high-DPI support
 
-#### Phase 4: Testing (Days 8-10)
+#### Phase 2: Advanced Qt6 Features
+
+1. Implement Qt6 property bindings where beneficial
+2. Update container usage to leverage Qt6 improvements
+3. Apply Qt6 concurrent processing patterns
+4. Consider QML integration for specific UI components
+
+#### Phase 3: Testing
 
 1. Verify all UI functionality
 2. Performance benchmarks

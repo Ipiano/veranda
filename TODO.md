@@ -8,31 +8,41 @@ This file tracks known issues and planned improvements for the Veranda project, 
 
 These changes should be completed first as they affect the entire codebase and will influence how subsequent improvements are implemented.
 
-### 1.1 Upgrade ROS2 to Latest LTS
+> **See detailed implementation plans**: [TODO_update_ros.md](TODO_update_ros.md), [TODO_upgrade_qt.md](TODO_upgrade_qt.md), [TODO_modernize_cmake.md](TODO_modernize_cmake.md)
+
+### 1.1 Upgrade ROS2 to Jazzy Jalisco ✅ COMPLETED
 
 **Priority**: Critical
-**Effort**: Large
 **Files**: All `package.xml`, `CMakeLists.txt`, and ROS2-dependent source files
 
-The project is locked to ROS2 Ardent Apalone (2017), which is long EOL. Upgrade to current LTS (Humble or newer).
+The project was locked to ROS2 Ardent Apalone (2017), which is long EOL. Upgraded to ROS2 Jazzy Jalisco (latest LTS).
 
-- [ ] Update `package.xml` files for ROS2 Humble/Iron package format
-- [ ] Replace `ament build` with `colcon build` throughout documentation
-- [ ] Update ROS2 API calls for compatibility (rclcpp changes between versions)
-- [ ] Update message type includes if any have changed
-- [ ] Fix threading model - newer ROS2 versions have better multi-threading support
-  - Remove the `spin_some()` timer hack in `main.cpp:67-89`
-  - Implement proper multi-threaded executor or callback-based spinning
-  - Consider `rclcpp::executors::MultiThreadedExecutor` with proper synchronization
+> **Detailed plan**: See [TODO_update_ros.md](TODO_update_ros.md)
+
+- [x] Update `package.xml` files for ROS2 Humble/Iron package format
+- [x] Replace `ament build` with `colcon build` throughout documentation
+- [x] Update ROS2 API calls for compatibility (rclcpp changes between versions)
+- [x] Update message type includes if any have changed
+- [x] Fix threading model - newer ROS2 versions have better multi-threading support
+  - [x] Remove the `spin_some()` timer hack in `main.cpp:67-89`
+  - [x] Implement background thread ROS2 spinning with `QtConcurrent::run`
+  - [x] Update `qRegisterMetaType` calls for correct cross-thread signal/slot
 - [ ] Update `README.md` with new build instructions
 - [ ] Remove or archive legacy `bouncy` and `crystal` branches
 
-### 1.2 Upgrade to Qt6
+### 1.2 Bare Bones Qt6 Upgrade
 
 **Priority**: High
-**Effort**: Medium
 **Files**: All Qt-dependent source files, CMakeLists.txt, .pro files
 
+**Strategy**: This is a two-phase upgrade approach:
+- **Phase 1.2 (this section)**: Bare bones upgrade to get the project building with Qt6
+- **Phase 2 (see section 2.5)**: Modernize to leverage Qt6-specific features and patterns
+
+> **Detailed upgrade plan**: See [TODO_upgrade_qt.md](TODO_upgrade_qt.md)
+> **Modernization plan**: See [TODO_modern_qt6.md](TODO_modern_qt6.md)
+
+**Bare bones upgrade tasks**:
 - [ ] Update `find_package(Qt5 ...)` to `find_package(Qt6 ...)` with fallback
 - [ ] Replace deprecated `qt5_wrap_cpp()` with `qt_wrap_cpp()` or rely on AUTOMOC
 - [ ] Replace deprecated `qt5_use_modules()` with `target_link_libraries(... Qt6::Core Qt6::Gui Qt6::Widgets)`
@@ -43,13 +53,19 @@ The project is locked to ROS2 Ardent Apalone (2017), which is long EOL. Upgrade 
 - [ ] Test QGraphicsView rendering for Qt6 compatibility
 - [ ] Update `.pro` files for Qt6 or remove if no longer maintaining Qt Creator support
 
-### 1.3 Modernize CMake Patterns
+### 1.3 Bare Bones CMake Modernization
 
 **Priority**: High
-**Effort**: Medium
 **Files**: All `CMakeLists.txt` files
 
-- [ ] Increase minimum CMake version from 3.5 to 3.16+
+**Strategy**: This is a two-phase modernization approach:
+- **Phase 1.3 (this section)**: Minimum CMake updates required for Qt6 and ROS2 Jazzy compatibility
+- **Phase 2 (see section 2.6)**: Full modernization to modern CMake 3.16+ patterns
+
+> **Detailed modernization plan**: See [TODO_modernize_cmake.md](TODO_modernize_cmake.md)
+
+**Bare bones CMake tasks**:
+- [ ] Increase minimum CMake version from 3.5 to 3.16
 - [ ] Replace `qt5_use_modules()` with modern `target_link_libraries()`:
   ```cmake
   # Old (deprecated)
@@ -58,26 +74,7 @@ The project is locked to ROS2 Ardent Apalone (2017), which is long EOL. Upgrade 
   # New
   target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets)
   ```
-- [ ] Replace global `include_directories()` with `target_include_directories()`:
-  ```cmake
-  # Old
-  include_directories("${veranda_box2d_INCLUDE_DIRS}")
-
-  # New
-  target_include_directories(${PROJECT_NAME} PRIVATE ${veranda_box2d_INCLUDE_DIRS})
-  ```
-- [ ] Use generator expressions for platform-specific settings
-- [ ] Consider upgrading C++ standard from C++11 to C++17
-- [ ] Replace embedded Box2D source with `FetchContent` or `find_package()`:
-  ```cmake
-  include(FetchContent)
-  FetchContent_Declare(
-    box2d
-    GIT_REPOSITORY https://github.com/erincatto/box2d.git
-    GIT_TAG v2.4.1
-  )
-  FetchContent_MakeAvailable(box2d)
-  ```
+- [ ] Update C++ standard from C++11 to C++17 (required for ROS2 Jazzy)
 - [ ] Fix plugin discovery path (`main.cpp:105-106`) to use proper ROS2 resource paths or ament index
 
 ---
@@ -86,22 +83,23 @@ The project is locked to ROS2 Ardent Apalone (2017), which is long EOL. Upgrade 
 
 These changes address software design issues and should be done after Phase 1 infrastructure is stable.
 
-### 2.1 Fix Threading and Event Loop Architecture
+> **See detailed plans**: [TODO_modern_ros.md](TODO_modern_ros.md), [TODO_component_ros_separation.md](TODO_component_ros_separation.md)
 
-**Priority**: Critical
-**Effort**: Large
+### 2.1 Fix Threading and Event Loop Architecture (Partially Complete)
+
+**Priority**: Medium (basic fix done, improvements optional)
 **Files**: `main.cpp`, `simulator_core.cpp`, `basic_physics.cpp`
 
-The current single-threaded design with `spin_some()` every 30ms causes:
-- Message delays for high-frequency topics
-- UI blocking during physics/ROS processing
-- Inability to handle real-time sensor rates (100Hz+)
+**Basic threading fix completed** ✅:
+- ROS2 spinning moved to background thread via `QtConcurrent::run`
+- Subscriber callbacks use Qt signal/slot with `qRegisterMetaType` for thread-safe delivery
+- Removed the 30ms `spin_some()` polling hack
 
-- [ ] Design proper multi-threaded architecture:
-  - Dedicated thread for ROS2 spinning
-  - Physics loop on separate thread or timer
-  - UI updates via queued signal/slot connections
-- [ ] Implement thread-safe communication between ROS2 callbacks and Qt
+> **Detailed design for further improvements**: See [TODO_modern_ros.md](TODO_modern_ros.md)
+
+**Optional enhancements** (not yet implemented):
+- [ ] Use `MultiThreadedExecutor` for parallel callback processing
+- [ ] Add callback groups for finer concurrency control
 - [ ] Consider using `QThread` with `moveToThread()` for physics engine
 - [ ] Add proper synchronization for shared data (world objects, models)
 - [ ] Profile and verify no race conditions
@@ -131,10 +129,11 @@ The `WorldObjectProperties` and `WorldObjectPhysics` wrappers are defeated by es
 ### 2.3 Improve Component Testability
 
 **Priority**: Medium
-**Effort**: Medium
 **Files**: Sensor and wheel component classes
 
 Components are tightly coupled to ROS2, making unit testing difficult.
+
+> **Detailed design**: See [TODO_component_ros_separation.md](TODO_component_ros_separation.md)
 
 - [ ] Abstract ROS2 channel creation behind an interface
 - [ ] Allow dependency injection of mock publishers/subscribers for testing
@@ -144,7 +143,6 @@ Components are tightly coupled to ROS2, making unit testing difficult.
 ### 2.4 Fix Physics Engine Issues
 
 **Priority**: Medium
-**Effort**: Small
 **Files**: `basic_physics.cpp`, component files
 
 - [ ] Fix `BasicPhysics::clear()` to ensure all objects release body references before world deletion
@@ -156,6 +154,36 @@ Components are tightly coupled to ROS2, making unit testing difficult.
   ```
 - [ ] Add comments explaining Box2D shape ownership (shapes are copied, safe to delete after fixture creation)
 
+### 2.5 Qt6 Modernization (Post-Upgrade)
+
+**Priority**: Low
+**Files**: All Qt-dependent source files
+
+After the bare bones Qt6 upgrade (Phase 1.2), modernize to use Qt6-specific features.
+
+> **Detailed plan**: See [TODO_modern_qt6.md](TODO_modern_qt6.md)
+
+- [ ] Implement Qt6 property bindings for reactive updates
+- [ ] Optimize QGraphicsView with Qt6 rendering improvements
+- [ ] Apply Qt6 concurrent processing patterns
+- [ ] Consider QML integration for future UI work
+
+### 2.6 Full CMake Modernization (Post-Upgrade)
+
+**Priority**: Medium
+**Files**: All `CMakeLists.txt` files
+
+After bare bones CMake updates (Phase 1.3), apply full modern CMake patterns.
+
+> **Detailed plan**: See [TODO_modernize_cmake.md](TODO_modernize_cmake.md)
+
+- [ ] Replace global `include_directories()` with `target_include_directories()`
+- [ ] Replace global `add_definitions()` with `target_compile_definitions()`
+- [ ] Use generator expressions for platform-specific settings
+- [ ] Export proper CMake targets for downstream packages
+- [ ] Create shared CMake module for common patterns
+- [ ] Replace embedded Box2D with `FetchContent` or `find_package()`
+
 ---
 
 ## Phase 3: Performance Optimization
@@ -165,10 +193,11 @@ These optimizations should be done after architectural issues are resolved.
 ### 3.1 Optimize Sensor Raycasting
 
 **Priority**: Medium
-**Effort**: Medium
 **Files**: `lidar_sensor.cpp`, `touch_sensor.cpp`
 
 Current implementation does one Box2D raycast per lidar ray per update.
+
+> **Detailed design**: See [TODO_raycasting_optimization.md](TODO_raycasting_optimization.md)
 
 - [ ] Profile raycast performance with multiple sensors
 - [ ] Consider batch raycasting or caching spatial data
@@ -178,7 +207,6 @@ Current implementation does one Box2D raycast per lidar ray per update.
 ### 3.2 Reduce Signal/Slot Overhead
 
 **Priority**: Low
-**Effort**: Small
 **Files**: `model.h`, `world_object_component.cpp`
 
 - [ ] Add epsilon check before emitting `transformChanged` signal:
@@ -189,10 +217,22 @@ Current implementation does one Box2D raycast per lidar ray per update.
 - [ ] Consider batching model updates rather than per-model signals
 - [ ] Profile signal emission frequency during typical simulation
 
-### 3.3 Optimize UI Rendering
+### 3.3 Vehicle Physics Refactor (Mecanum Wheels)
+
+**Priority**: Low (unless mecanum wheels are critical feature)
+**Files**: Wheel components, physics engine
+
+Address mecanum wheel force cancellation and numerical instability.
+
+> **Detailed design**: See [TODO_vehicle_physics.md](TODO_vehicle_physics.md)
+
+- [ ] Implement rigid island detection for multi-body robots
+- [ ] Custom force summation for mecanum wheel configurations
+- [ ] Direct velocity updates to bypass Box2D constraint solver for rigid islands
+
+### 3.4 Optimize UI Rendering
 
 **Priority**: Low
-**Effort**: Medium
 **Files**: `qgraphicssimulationviewer.cpp`
 
 - [ ] Replace full model rebuild on change with incremental updates in `modelChanged()`
@@ -207,10 +247,11 @@ Current implementation does one Box2D raycast per lidar ray per update.
 ### 4.1 Expand Test Coverage
 
 **Priority**: Medium
-**Effort**: Large
 **Files**: New test files in `tests/` directories
 
 Current coverage is limited to Property and Model datatypes.
+
+> **Note**: Component testability improvements in Phase 2.3 will enable more comprehensive testing
 
 - [ ] Add physics integration tests (body creation, forces, collisions)
 - [ ] Add component behavior tests (sensor output, wheel response)
@@ -222,7 +263,6 @@ Current coverage is limited to Property and Model datatypes.
 ### 4.2 Fix Property Validator Inconsistency
 
 **Priority**: Low
-**Effort**: Small
 **Files**: `property.h`, `test_property.cpp`
 
 The `angle_validator` implementation wraps angles to [0, 360), but tests expect rejection of out-of-range values.
@@ -231,10 +271,23 @@ The `angle_validator` implementation wraps angles to [0, 360), but tests expect 
 - [ ] Fix either implementation or tests to match
 - [ ] Add test cases for edge cases (exactly 360, negative angles, large angles)
 
-### 4.3 Clean Up Technical Debt
+### 4.3 Migrate to GoogleTest (Optional)
+
+**Priority**: Very Low
+**Files**: Test infrastructure
+
+Current test suite uses Catch2. Migration to GoogleTest would align with ROS2 ecosystem.
+
+> **Detailed plan**: See [TODO_migrate_to_gtest.md](TODO_migrate_to_gtest.md)
+
+**Note**: Given the small test suite (only 2 test files), this migration provides limited value and can be deferred indefinitely.
+
+- [ ] Decide if migration is worth the effort
+- [ ] If yes, follow detailed migration plan
+
+### 4.4 Clean Up Technical Debt
 
 **Priority**: Low
-**Effort**: Small
 **Files**: Various
 
 - [ ] Move TODO/FIXME comments to this file or issue tracker:
@@ -252,8 +305,8 @@ The `angle_validator` implementation wraps angles to [0, 360), but tests expect 
 ### Dependencies Between Tasks
 
 ```
-Phase 1.1 (ROS2 Upgrade)
-    └── Phase 2.1 (Threading) - Easier with modern ROS2 executors
+Phase 1.1 (ROS2 Upgrade) ✅ COMPLETED
+    └── Phase 2.1 (Threading) - Basic fix done, optional improvements available
 
 Phase 1.2 (Qt6 Upgrade)
     └── Phase 3.3 (UI Optimization) - May have different performance characteristics
@@ -265,8 +318,16 @@ Phase 2.2 (Wrappers) + Phase 2.3 (Testability)
     └── Phase 4.1 (Testing) - Cleaner architecture enables better tests
 ```
 
-### Estimated Effort Scale
+## Related Documentation
 
-- **Small**: 1-2 hours, localized changes
-- **Medium**: 1-2 days, multiple files or moderate complexity
-- **Large**: 1+ weeks, significant refactoring or cross-cutting changes
+Detailed implementation plans for specific tasks:
+
+- **[TODO_update_ros.md](TODO_update_ros.md)**: ROS2 upgrade to Jazzy Jalisco ✅ **COMPLETED**
+- **[TODO_upgrade_qt.md](TODO_upgrade_qt.md)**: Qt 5 to Qt 6 upgrade (bare bones)
+- **[TODO_modern_qt6.md](TODO_modern_qt6.md)**: Qt 6 modernization (post-upgrade)
+- **[TODO_modernize_cmake.md](TODO_modernize_cmake.md)**: Full CMake modernization
+- **[TODO_modern_ros.md](TODO_modern_ros.md)**: Modern ROS2 threading architecture (optional improvements)
+- **[TODO_component_ros_separation.md](TODO_component_ros_separation.md)**: Component testability improvements
+- **[TODO_raycasting_optimization.md](TODO_raycasting_optimization.md)**: Sensor performance optimization
+- **[TODO_vehicle_physics.md](TODO_vehicle_physics.md)**: Mecanum wheel physics refactor
+- **[TODO_migrate_to_gtest.md](TODO_migrate_to_gtest.md)**: GoogleTest migration (optional)
