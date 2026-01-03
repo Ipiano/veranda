@@ -11,22 +11,33 @@ This document outlines the work required to modernize the CMake build system fro
 
 ## Current State
 
-- **Current CMake Version**: 3.5 minimum
+- **Current CMake Version**: 3.16 minimum (updated in wt-upgrade-qt)
 - **Target CMake Version**: 3.16+ minimum (3.22+ recommended for full modern features)
 - **Build System**: ament_cmake (ROS 2)
 
-### Summary of Legacy Patterns Found
+### Completed Work
 
-| Pattern | Count | Severity |
-|---------|-------|----------|
-| `include_directories()` (global scope) | 25+ | High |
-| `add_definitions()` (global scope) | 15+ | High |
-| `CMAKE_CXX_FLAGS` modification | 12 | Medium |
-| `qt5_use_modules()` (deprecated) | 12 | High |
-| `qt5_wrap_cpp()` (prefer AUTOMOC) | 10 | Low |
-| `ament_target_dependencies()` | 14 | Medium |
-| `set(PROJECT_NAME ...)` before `project()` | 10 | Low |
-| Missing `CMAKE_CXX_STANDARD_REQUIRED` | All | Medium |
+The following CMake modernization tasks have been completed as part of the Qt 5.12/5.15 upgrade:
+
+- ✅ Updated `cmake_minimum_required(VERSION 3.16)` in all packages
+- ✅ Replaced `qt5_use_modules()` with `target_link_libraries(Qt5::Core, etc.)`
+- ✅ Replaced `add_definitions()` with `target_compile_definitions()` for DLL exports
+- ✅ Added `CMAKE_CXX_STANDARD_REQUIRED ON` to all packages
+- ✅ Updated C++ standard to C++17
+- ✅ Used generator expressions for platform-specific definitions
+- ✅ Updated `ament_cmake_add_catch_test.cmake` with modern patterns
+
+### Remaining Legacy Patterns
+
+| Pattern | Count | Severity | Status |
+|---------|-------|----------|--------|
+| `include_directories()` (global scope) | 25+ | High | TODO |
+| `add_definitions()` (global scope) | ~5 | High | Partially done |
+| `CMAKE_CXX_FLAGS` modification | 12 | Medium | TODO |
+| `qt5_use_modules()` (deprecated) | 0 | High | ✅ Done |
+| `qt5_wrap_cpp()` (prefer AUTOMOC) | 1 | Low | Kept for header-only QObjects |
+| `ament_target_dependencies()` | 14 | Medium | TODO |
+| `set(PROJECT_NAME ...)` before `project()` | 10 | Low | TODO |
 
 ---
 
@@ -442,19 +453,26 @@ veranda_target_warnings(${PROJECT_NAME})
 ### Core Packages
 
 #### `pkg-veranda_core_api/CMakeLists.txt`
-- [ ] Update `cmake_minimum_required(VERSION 3.16)`
+- [x] Update `cmake_minimum_required(VERSION 3.16)`
 - [ ] Fix `project()` declaration (remove `set(PROJECT_NAME...)`)
-- [ ] Add `CMAKE_CXX_STANDARD_REQUIRED ON`
+- [x] Add `CMAKE_CXX_STANDARD_REQUIRED ON`
 - [ ] Replace `include_directories()` → `target_include_directories()`
-- [ ] Replace `add_definitions()` → `target_compile_definitions()`
+- [x] Replace `add_definitions()` → `target_compile_definitions()`
 - [ ] Replace `CMAKE_CXX_FLAGS` → `target_compile_options()`
-- [ ] Replace `qt5_wrap_cpp()` → rely on AUTOMOC
-- [ ] Replace `qt5_use_modules()` → `target_link_libraries()`
+- [x] Keep `qt5_wrap_cpp()` for header-only QObjects (Model, Property, PropertyView)
+- [x] Replace `qt5_use_modules()` → `target_link_libraries()`
 - [ ] Update `install()` to export targets properly
 - [ ] Add `ament_export_targets()`
 
 #### `pkg-veranda_core/CMakeLists.txt`
-- [ ] Same changes as above
+- [x] Update `cmake_minimum_required(VERSION 3.16)`
+- [ ] Fix `project()` declaration
+- [x] Add `CMAKE_CXX_STANDARD_REQUIRED ON`
+- [ ] Replace `include_directories()` → `target_include_directories()`
+- [x] Replace `add_definitions()` → `target_compile_definitions()`
+- [ ] Replace `CMAKE_CXX_FLAGS` → `target_compile_options()`
+- [x] Replace `qt5_use_modules()` → `target_link_libraries()`
+- [ ] Update `install()` to export targets properly
 
 #### `pkg-veranda_box2d/CMakeLists.txt`
 - [ ] Update `cmake_minimum_required(VERSION 3.16)`
@@ -493,9 +511,9 @@ veranda_target_warnings(${PROJECT_NAME})
 ### Test Infrastructure
 
 #### `ament_cmake_add_catch_test.cmake`
-- [ ] Replace `qt5_wrap_cpp()` → use AUTOMOC flag
-- [ ] Replace `qt5_use_modules()` → `target_link_libraries()`
-- [ ] Use modern `target_link_libraries()` with scope keywords
+- [x] Replace `qt5_use_modules()` → `target_link_libraries(Qt5::Core, etc.)`
+- [x] Use modern `target_link_libraries()` with Qt5 imported targets
+- [ ] Replace `qt5_wrap_cpp()` → use AUTOMOC flag (currently needed for explicit header MOC)
 
 ---
 
