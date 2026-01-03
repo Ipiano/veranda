@@ -27,13 +27,18 @@ find_package(veranda_qt_frontend_plugin_api REQUIRED)
 find_package(veranda_qt_plugin_api REQUIRED)
 
 ## Find and configure QT
+## Qt 5.15 LTS is the latest Qt 5 version with long-term support
 set(QT_COMPONENTS Core Widgets Gui)
-find_package(Qt5 REQUIRED COMPONENTS
+find_package(Qt5 5.12 REQUIRED COMPONENTS
   ${QT_COMPONENTS}
 )
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+
+## Enable Qt deprecation warnings to prepare for future Qt 6 migration
+add_compile_definitions(QT_DEPRECATED_WARNINGS)
 
 include_directories( include ${CMAKE_BINARY_DIR} )
 
@@ -87,7 +92,6 @@ set(CPP_SRCS
     )
 
 set(RCC_FILES ui/resources.qrc)
-qt5_add_resources(RCC_SRCS ${RCC_FILES})
 
 ###########
 ## Build ##
@@ -103,29 +107,33 @@ if(NOT ${CMAKE_VERSION} VERSION_LESS "3.10")
     cmake_policy(SET CMP0071 NEW)
 endif()
 
-## Run MOC on files with Qt Keywords and Macros
-qt5_wrap_cpp(MOC_SRCS ${MOC_HDRS})
-
-## Wrap .ui files as cpp files
+## Wrap .ui files manually since they're in a different directory than sources
 qt5_wrap_ui(UI_SRCS ${UI_FILES})
 
-add_executable(${EXE_NAME} ${UI_SRCS} ${CPP_SRCS} ${MOC_SRCS} ${RCC_SRCS})
-
-## Add qt module dependencies to executable
-## this will find all the headers and link all the libraries
-qt5_use_modules(${EXE_NAME} ${QT_COMPONENTS})
+## Build executable
+## AUTOMOC and AUTORCC will automatically handle MOC and resource files
+add_executable(${EXE_NAME} ${CPP_SRCS} ${MOC_HDRS} ${UI_SRCS} ${RCC_FILES})
 
 ## Pull in stuff exported from other packages
 ament_target_dependencies(${EXE_NAME}
-    "rclcpp"
-    "ament_index_cpp"
-    "std_msgs"
-    "sensor_msgs"
-    "veranda_box2d"
-    "veranda_core_api"
-    "veranda_core"
-    "veranda_qt_frontend_plugin_api"
-    "veranda_qt_plugin_api"
+    PUBLIC
+        "rclcpp"
+        "ament_index_cpp"
+        "std_msgs"
+        "sensor_msgs"
+        "veranda_box2d"
+        "veranda_core_api"
+        "veranda_core"
+        "veranda_qt_frontend_plugin_api"
+        "veranda_qt_plugin_api"
+)
+
+## Link Qt modules using modern target-based approach
+target_link_libraries(${EXE_NAME}
+    PRIVATE
+        Qt5::Core
+        Qt5::Widgets
+        Qt5::Gui
 )
 
 #############

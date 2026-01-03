@@ -1,5 +1,7 @@
 #include "ui/mode_controller.h"
 
+#include <QRegularExpression>
+
 Mode_Controller::Mode_Controller(visualizerFactory factory, QToolButton *pModeButton, QWidget* pMenu, QWidget* pToolsMenu, QListWidget* pActive, QTableView* pProperties, QTabWidget* pTabs, QWidget *parent)
 {
     //set mode objects, these will be used to display menus and lists of a specific mode
@@ -330,7 +332,7 @@ void Mode_Controller::nothingSelected()
 //selects item via user clicking on active object list item
 void Mode_Controller::robotItemClicked(QListWidgetItem* item)
 {
-    QString strName = item->data(Qt::DisplayRole).toString().section(QRegExp("\\s+"), 0, 0, QString::SectionSkipEmpty);
+    QString strName = item->data(Qt::DisplayRole).toString().section(QRegularExpression("\\s+"), 0, 0, QString::SectionSkipEmpty);
     objectSelected(strName.toInt());
 }
 

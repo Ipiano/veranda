@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(veranda_builtin_plugin_qt_wrappers)
 
-## Compile as C++11 Library
+## Compile as C++17 Library
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -17,16 +17,17 @@ find_package(veranda_builtin_wheels REQUIRED)
 find_package(veranda_builtin_shapes REQUIRED)
 
 ## Find and configure QT
+## Qt 5.15 LTS is the latest Qt 5 version with long-term support
 set(QT_COMPONENTS Core Gui)
-find_package(Qt5 REQUIRED COMPONENTS
+find_package(Qt5 5.12 REQUIRED COMPONENTS
   ${QT_COMPONENTS}
 )
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 
-add_definitions(-DQT_PLUGIN)
-add_definitions(-DQT_SHARED)
+## Enable Qt deprecation warnings to prepare for future Qt 6 migration
+add_compile_definitions(QT_DEPRECATED_WARNINGS QT_PLUGIN QT_SHARED)
 
 include_directories( include )
 include_directories( ${CMAKE_BINARY_DIR} )
@@ -53,22 +54,24 @@ include_directories(${veranda_builtin_shapes_INCLUDE_DIRS})
 ###########################################
 function(make_plugin plugin_name plugin_moc_hdrs plugin_srcs plugin_roslib)
 
-    ## Run MOC on files with Qt Keywords and Macros
-    qt5_wrap_cpp(plugin_moc_srcs ${plugin_moc_hdrs})
-
     ## Build the plugin lib
-    add_library(${plugin_name} SHARED ${plugin_srcs} ${plugin_moc_srcs})
-
-    ## Add qt module dependencies to executable
-    ## this will find all the headers and link all the libraries
-    qt5_use_modules(${plugin_name} ${QT_COMPONENTS})
+    ## AUTOMOC will automatically generate MOC files for headers with Q_OBJECT
+    add_library(${plugin_name} SHARED ${plugin_srcs} ${plugin_moc_hdrs})
 
     ## Pull in stuff exported from other packages
     ament_target_dependencies(${plugin_name}
-        "rclcpp"
-        "veranda_qt_plugin_api"
-        "veranda_core_api"
-        "${plugin_roslib}")
+        PUBLIC
+            "rclcpp"
+            "veranda_qt_plugin_api"
+            "veranda_core_api"
+            "${plugin_roslib}")
+
+    ## Link Qt modules using modern target-based approach
+    target_link_libraries(${plugin_name}
+        PUBLIC
+            Qt5::Core
+            Qt5::Gui
+    )
 
     ament_index_get_resource(PLUGIN_PATH "veranda_plugin_path" "veranda_qt_frontend")
 

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(veranda_qt_frontend_image_file_handler)
 
-## Compile as C++11 Library
+## Compile as C++17 Library
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -16,7 +16,8 @@ find_package(veranda_qt_frontend_plugin_api REQUIRED)
 find_package(rclcpp REQUIRED)
 
 ## Find and configure QT
-find_package(Qt5 REQUIRED COMPONENTS
+## Qt 5.15 LTS is the latest Qt 5 version with long-term support
+find_package(Qt5 5.12 REQUIRED COMPONENTS
   Core
   Gui
   Widgets
@@ -25,8 +26,8 @@ find_package(Qt5 REQUIRED COMPONENTS
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 
-add_definitions(-DQT_PLUGIN)
-add_definitions(-DQT_SHARED)
+## Enable Qt deprecation warnings to prepare for future Qt 6 migration
+add_compile_definitions(QT_DEPRECATED_WARNINGS QT_PLUGIN QT_SHARED)
 
 include_directories( ${CMAKE_BINARY_DIR} )
 include_directories( include )
@@ -70,22 +71,25 @@ if(NOT ${CMAKE_VERSION} VERSION_LESS "3.10")
     cmake_policy(SET CMP0071 NEW)
 endif()
 
-## Run MOC on files with Qt Keywords and Macros
-qt5_wrap_cpp(MOC_SRCS ${MOC_HDRS})
-
-## Build the executable
-add_library(image_loader_plugin SHARED ${CPP_SRCS} ${MOC_SRCS})
-
-## Add qt module dependencies to executable
-## this will find all the headers and link all the libraries
-qt5_use_modules(image_loader_plugin Core Gui Widgets)
+## Build the plugin library
+## AUTOMOC will automatically generate MOC files for headers with Q_OBJECT
+add_library(image_loader_plugin SHARED ${CPP_SRCS} ${MOC_HDRS})
 
 ## Pull in stuff exported from other packages
 ament_target_dependencies(image_loader_plugin
-    "veranda_core_api"
-    "veranda_box2d"
-    "rclcpp"
-    "veranda_qt_frontend_plugin_api"
+    PUBLIC
+        "veranda_core_api"
+        "veranda_box2d"
+        "rclcpp"
+        "veranda_qt_frontend_plugin_api"
+)
+
+## Link Qt modules using modern target-based approach
+target_link_libraries(image_loader_plugin
+    PUBLIC
+        Qt5::Core
+        Qt5::Gui
+        Qt5::Widgets
 )
 
 ament_index_get_resource(PLUGIN_PATH "veranda_plugin_path" "veranda_qt_frontend")

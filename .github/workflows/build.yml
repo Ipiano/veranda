@@ -4,7 +4,7 @@ on:
   push:
 
 jobs:
-  build-ubuntu:
+  build-ubuntu-jazzy-qt515:
     runs-on: ubuntu-24.04
 
     steps:
@@ -54,8 +54,20 @@ jobs:
         cd veranda
         colcon test-result --verbose
 
-  build-windows:
+  build-windows-jazzy:
+    name: build-windows-jazzy-${{ matrix.qt-short }}
     runs-on: windows-latest
+    strategy:
+      matrix:
+        include:
+          - qt-version: '5.12.12'
+            qt-arch: 'win64_msvc2017_64'
+            qt-short: 'qt512'
+            build-testing: 'ON'
+          - qt-version: '5.15.2'
+            qt-arch: 'win64_msvc2019_64'
+            qt-short: 'qt515'
+            build-testing: 'ON'
 
     steps:
     - name: Checkout repository
@@ -83,11 +95,19 @@ jobs:
       run: |
         pip uninstall -y colcon-meson || exit 0
 
+    - name: Update colcon packages
+      shell: cmd
+      run: |
+        REM Update all colcon packages to resolve deprecation warnings
+        REM See: https://github.com/colcon/colcon-core/issues/554
+        pip install -U colcon-common-extensions colcon-core
+
     - name: Setup Qt
       uses: jurplel/install-qt-action@v4
       with:
-        version: '5.15.2'
-        arch: 'win64_msvc2019_64'
+        # ROS 2 Jazzy officially targets Qt 5.12.12 on Windows, but 5.15.2 also works
+        version: ${{ matrix.qt-version }}
+        arch: ${{ matrix.qt-arch }}
 
     - name: Install dependencies
       run: |
@@ -100,18 +120,21 @@ jobs:
         cd veranda
         REM Force CMake to use Python 3.9 by explicitly passing Python3_EXECUTABLE.
         REM Without this, CMake may find Python 3.12 which lacks the catkin_pkg module.
-        colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release -DPython3_EXECUTABLE=C:\hostedtoolcache\windows\Python\3.9.13\x64\python.exe
+        REM Disable desktop notifications to avoid Windows message handling errors in CI
+        colcon build --symlink-install --event-handlers console_direct+ desktop_notification- --cmake-args -DCMAKE_BUILD_TYPE=Release -DPython3_EXECUTABLE=C:\hostedtoolcache\windows\Python\3.9.13\x64\python.exe -DBUILD_TESTING=${{ matrix.build-testing }}
 
     - name: Run tests
+      if: matrix.build-testing == 'ON'
       shell: cmd
       run: |
         call C:\dev\jazzy\ros2-windows\local_setup.bat
         cd veranda
         call install\local_setup.bat
-        colcon test --event-handlers console_direct+
+        colcon test --event-handlers console_direct+ desktop_notification-
       continue-on-error: true
 
     - name: Test results
+      if: matrix.build-testing == 'ON'
       run: |
         cd veranda
         colcon test-result --verbose
