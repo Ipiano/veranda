@@ -4,6 +4,11 @@
 
 This document proposes optimizations to the sensor raycasting system in Veranda, which is a significant performance bottleneck when running multiple lidar sensors at high update rates.
 
+> **Related documents**:
+> - [TODO.md](TODO.md) - Phase 3.1 (Optimize sensor raycasting)
+>
+> **Note**: These optimizations should be applied **after** completing Phase 1 and Phase 2 infrastructure modernization. Profile first to identify actual bottlenecks before implementing.
+
 ## Current State
 
 ### Implementation
@@ -397,9 +402,9 @@ class AdaptiveLidar : public Lidar_Sensor {
 };
 ```
 
-## Implementation Plan
+## Implementation Phases
 
-### Phase 1: Measurement (Day 1)
+### Phase 1: Measurement
 
 1. Add profiling instrumentation
 2. Measure current performance with various configurations
@@ -435,26 +440,26 @@ double raycastTime = 0, visualTime = 0;
 #endif
 ```
 
-### Phase 2: Quick Wins (Days 2-3)
+### Phase 2: Quick Wins
 
 1. Implement precomputed ray directions
 2. Replace `dynamic_cast` with `static_cast`
 3. Cache scan array allocations
 4. Add visual update rate limiting
 
-### Phase 3: Batch Processing (Days 4-5)
+### Phase 3: Batch Processing
 
 1. Implement `BatchRayCaster`
 2. Integrate with lidar sensor
 3. Benchmark improvement
 
-### Phase 4: Advanced Optimizations (Days 6-8)
+### Phase 4: Advanced Optimizations
 
 1. Implement spatial hashing (if profiling shows benefit)
 2. Consider SIMD for specific bottlenecks
 3. Add LOD system
 
-### Phase 5: Validation (Days 9-10)
+### Phase 5: Validation
 
 1. Verify scan accuracy unchanged
 2. Performance benchmarks

@@ -2,6 +2,13 @@
 
 This document outlines the work required to modernize the CMake build system from legacy CMake 3.5 patterns to modern CMake 3.16+ conventions.
 
+> **Related documents**:
+> - [TODO.md](TODO.md) - Phase 1.3 (Bare bones CMake), Phase 2.6 (Full modernization)
+> - [TODO_upgrade_qt.md](TODO_upgrade_qt.md) - Qt6 upgrade requires CMake changes
+> - [TODO_update_ros.md](TODO_update_ros.md) - ROS2 Jazzy requires CMake 3.16+
+>
+> **Note**: This document covers the **full modernization** (Phase 2.6). For bare minimum changes needed for Qt6/ROS2 compatibility, see TODO.md Phase 1.3.
+
 ## Current State
 
 - **Current CMake Version**: 3.5 minimum
@@ -656,19 +663,17 @@ ament_package()
 
 ---
 
-## Estimated Effort
+## Implementation Phases
 
-| Phase | Description | Effort |
-|-------|-------------|--------|
-| 1. Create shared CMake module | `cmake/VerandaCommon.cmake` | 2-3 hours |
-| 2. Update core packages | `core_api`, `core`, `box2d` | 3-4 hours |
-| 3. Update plugin logic packages | `sensors`, `wheels`, `shapes` | 2-3 hours |
-| 4. Update Qt frontend packages | All frontend packages | 3-4 hours |
-| 5. Update Qt plugin packages | Plugin wrappers, APIs | 2-3 hours |
-| 6. Update test infrastructure | `catch2`, test cmake | 1-2 hours |
-| 7. Testing and debugging | Full build verification | 4-6 hours |
-
-**Total**: 2-3 days for an experienced CMake developer
+| Phase | Description |
+|-------|-------------|
+| 1. Create shared CMake module | `cmake/VerandaCommon.cmake` |
+| 2. Update core packages | `core_api`, `core`, `box2d` |
+| 3. Update plugin logic packages | `sensors`, `wheels`, `shapes` |
+| 4. Update Qt frontend packages | All frontend packages |
+| 5. Update Qt plugin packages | Plugin wrappers, APIs |
+| 6. Update test infrastructure | `catch2`, test cmake |
+| 7. Testing and debugging | Full build verification |
 
 ---
 

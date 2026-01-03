@@ -2,52 +2,62 @@
 
 ## Overview
 
-This document proposes upgrading Veranda from ROS2 Ardent Apalone (2017) to a modern ROS2 LTS release (Humble Hawksbill or newer), and leveraging modern ROS2 features to resolve the current threading limitations.
+This document proposes leveraging modern ROS2 features to improve the threading architecture beyond the basic upgrade.
 
-## Current State
+> **Related documents**:
+> - [TODO.md](TODO.md) - Phase 2.1 (Fix threading architecture)
+> - [TODO_update_ros.md](TODO_update_ros.md) - Phase 1.1 (ROS2 upgrade to Jazzy) ✅ **COMPLETED**
+> - [TODO_component_ros_separation.md](TODO_component_ros_separation.md) - Component testability improvements
 
-### Problems
+## Current State (Post-Upgrade)
 
-1. **Outdated ROS2 Version**: Ardent is the first ROS2 release and has been EOL since 2018
-2. **Single-Threaded Workaround**: Due to early ROS2 thread-safety issues, the codebase uses a polling hack:
-   ```cpp
-   // main.cpp:67-89
-   QTimer spinTimer;
-   spinTimer.setInterval(30);
-   QObject::connect(&spinTimer, &QTimer::timeout, [&]() {
-       rclcpp::spin_some(node);
-   });
-   ```
-3. **Message Latency**: 30ms polling interval causes delays for high-frequency topics
-4. **UI Blocking**: ROS2 processing blocks the Qt event loop
-5. **Build System**: Uses `ament build` instead of modern `colcon`
+### What's Been Done ✅
 
-### Current Architecture
+1. **ROS2 Jazzy Upgrade**: Completed - all API changes applied
+2. **Threading Fix**: The `spin_some()` timer hack has been removed
+   - Now uses `QtConcurrent::run([node]() { rclcpp::spin(node); })` for background spinning
+   - Subscriber callbacks use Qt signal/slot with `qRegisterMetaType` for thread-safe delivery
+3. **Build System**: Uses `colcon build`
+
+### Remaining Opportunities (This Document)
+
+The improvements below are **optional enhancements** that can further improve performance and architecture:
+
+1. **MultiThreadedExecutor**: Currently uses single-threaded spin - could parallelize callbacks
+2. **Callback Groups**: Could provide finer-grained concurrency control
+3. **QoS Profiles**: Currently uses hardcoded QoS values
+4. **Parameter Server**: Not using ROS2 parameter system
+5. **Lifecycle Nodes**: Not using managed lifecycle transitions
+
+### Current Architecture (Post-Upgrade)
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    Main Thread                          │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────┐ │
-│  │ Qt Event    │  │ ROS2        │  │ Physics         │ │
-│  │ Loop        │──│ spin_some() │──│ Step            │ │
-│  │             │  │ (30ms poll) │  │                 │ │
-│  └─────────────┘  └─────────────┘  └─────────────────┘ │
-└─────────────────────────────────────────────────────────┘
+┌──────────────────────────────────┐  ┌──────────────────────────────────┐
+│          Main Thread             │  │       ROS2 Background Thread     │
+│  ┌─────────────┐  ┌───────────┐  │  │  ┌─────────────────────────────┐ │
+│  │ Qt Event    │  │ Physics   │  │  │  │ rclcpp::spin(node)          │ │
+│  │ Loop        │  │ Step      │  │  │  │                             │ │
+│  └──────┬──────┘  └───────────┘  │  │  └──────────────┬──────────────┘ │
+│         │                        │  │                 │                │
+│         │  Qt Queued Signals     │  │                 │                │
+│         │◄───────────────────────┼──┼─────────────────┘                │
+│         ▼                        │  │                                  │
+│  ┌─────────────────────────────┐ │  │                                  │
+│  │ _processMessage() slots     │ │  │                                  │
+│  │ (thread-safe via Qt)        │ │  │                                  │
+│  └─────────────────────────────┘ │  │                                  │
+└──────────────────────────────────┘  └──────────────────────────────────┘
 ```
 
-## Proposed Solution
+## Proposed Improvements (Optional)
 
-### Target ROS2 Version
+### ROS2 Version
 
-**ROS2 Humble Hawksbill (LTS until May 2027)** or **ROS2 Iron Irwini**
+**Already upgraded to ROS2 Jazzy Jalisco** ✅
 
-Rationale:
-- Humble is current LTS with long support window
-- Mature multi-threading support with executors
-- Well-documented migration path from earlier versions
-- Wide community adoption and package availability
+The improvements below leverage Jazzy's mature multi-threading support with executors.
 
-### New Threading Architecture
+### Proposed Threading Architecture (MultiThreadedExecutor)
 
 ```
 ┌────────────────────────────────────────────────────────────────────┐
@@ -284,65 +294,31 @@ public:
 };
 ```
 
-### Migration Steps
+### Implementation Steps
 
-#### Step 1: Update Build Infrastructure (Week 1)
+#### Step 1: Complete ROS2 Jazzy Upgrade ✅ DONE
 
-1. Update all `package.xml` files:
-   ```xml
-   <?xml version="1.0"?>
-   <?xml-model href="http://download.ros.org/schema/package_format3.xsd"?>
-   <package format="3">
-     <name>veranda_core</name>
-     <version>1.0.0</version>
-     <!-- ... -->
-     <buildtool_depend>ament_cmake</buildtool_depend>
-     <depend>rclcpp</depend>
-     <test_depend>ament_lint_auto</test_depend>
-     <!-- ... -->
-   </package>
-   ```
+The basic ROS2 Jazzy upgrade has been completed:
+- All `package.xml` files updated
+- CMakeLists.txt updated for Jazzy
+- Deprecated rclcpp APIs updated
+- Background thread spinning implemented (QtConcurrent + queued signals)
 
-2. Update CMakeLists.txt for colcon:
-   ```cmake
-   cmake_minimum_required(VERSION 3.16)
-   project(veranda_core)
-
-   # Find dependencies
-   find_package(ament_cmake REQUIRED)
-   find_package(rclcpp REQUIRED)
-
-   # Use ament_target_dependencies for ROS2 deps
-   ament_target_dependencies(${PROJECT_NAME}
-     rclcpp
-     std_msgs
-     sensor_msgs
-   )
-   ```
-
-3. Update documentation for `colcon build`
-
-#### Step 2: API Compatibility Updates (Week 1-2)
-
-1. Update deprecated rclcpp APIs
-2. Update message type imports if changed
-3. Fix any breaking changes in sensor_msgs, geometry_msgs
-
-#### Step 3: Threading Refactor (Week 2-3)
+#### Step 2: Threading Refactor (Optional Enhancement)
 
 1. Implement `MultiThreadedExecutor` approach
 2. Add callback groups to components
 3. Update signal/slot connections for thread safety
 4. Add mutex protection for shared state if needed
 
-#### Step 4: Add Modern Features (Week 3-4)
+#### Step 3: Add Modern ROS2 Features
 
 1. Implement QoS profiles
 2. Add parameter server support
 3. Consider lifecycle node migration
 4. Add launch file support
 
-#### Step 5: Testing and Validation (Week 4)
+#### Step 4: Testing and Validation
 
 1. Verify message latency improvements
 2. Profile CPU usage compared to old approach
@@ -394,7 +370,7 @@ If issues arise:
 
 ## References
 
-- [ROS2 Humble Migration Guide](https://docs.ros.org/en/humble/Releases/Release-Humble-Hawksbill.html)
-- [ROS2 Executors Documentation](https://docs.ros.org/en/humble/Concepts/About-Executors.html)
-- [ROS2 Callback Groups](https://docs.ros.org/en/humble/How-To-Guides/Using-callback-groups.html)
-- [ROS2 QoS Profiles](https://docs.ros.org/en/humble/Concepts/About-Quality-of-Service-Settings.html)
+- [ROS2 Jazzy Migration Guide](https://docs.ros.org/en/jazzy/Releases/Release-Jazzy-Jalisco.html)
+- [ROS2 Executors Documentation](https://docs.ros.org/en/jazzy/Concepts/About-Executors.html)
+- [ROS2 Callback Groups](https://docs.ros.org/en/jazzy/How-To-Guides/Using-callback-groups.html)
+- [ROS2 QoS Profiles](https://docs.ros.org/en/jazzy/Concepts/About-Quality-of-Service-Settings.html)

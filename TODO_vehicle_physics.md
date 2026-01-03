@@ -4,6 +4,11 @@
 
 The current implementation uses Box2D for full dynamics with high-mass wheels, low-mass chassis, and stiff spring/weld joints. This causes issues with mecanum wheel force cancellation and numerical instability. The solution is to use Box2D primarily for collision detection while computing vehicle dynamics ourselves.
 
+> **Related documents**:
+> - [TODO.md](TODO.md) - Phase 3.3 (Vehicle physics refactor)
+>
+> **Note**: This is a **specialized optimization** for mecanum wheel configurations. Only implement if mecanum wheels are a critical feature. This should be done after Phase 1 and Phase 2 infrastructure work.
+
 ## Problem Summary
 
 - Box2D assumes side-view physics with gravity; top-down requires fighting its friction model
