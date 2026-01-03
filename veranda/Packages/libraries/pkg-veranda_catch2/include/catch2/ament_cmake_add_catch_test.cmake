@@ -43,8 +43,11 @@ function(ament_add_catch_test target)
 
     add_executable("${target}" ${cpp_sources} ${catch_main})
 
+    # Always link Qt Core since catch_main.cpp uses QCoreApplication
     if(ARG_QT_LIBS)
-        qt5_use_modules("${target}" "${ARG_QT_LIBS}")
+        qt5_use_modules("${target}" Core "${ARG_QT_LIBS}")
+    else()
+        qt5_use_modules("${target}" Core)
     endif()
 
     ament_target_dependencies(${target} ${ROS_LIBS} "veranda_catch2")
