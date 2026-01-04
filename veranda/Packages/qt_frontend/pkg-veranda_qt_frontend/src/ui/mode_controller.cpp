@@ -2,7 +2,7 @@
 
 #include <QRegularExpression>
 
-Mode_Controller::Mode_Controller(visualizerFactory factory, QToolButton *pModeButton, QWidget* pMenu, QWidget* pToolsMenu, QListWidget* pActive, QTableView* pProperties, QTabWidget* pTabs, QWidget *parent)
+Mode_Controller::Mode_Controller(visualizerFactory factory, QToolButton *pModeButton, QWidget* pMenu, QWidget* pToolsMenu, QListWidget* pActive, QTableView* pProperties, QTabWidget* pTabs, QWidget * /*parent*/)
 {
     //set mode objects, these will be used to display menus and lists of a specific mode
     makeWidget = factory;
@@ -228,9 +228,9 @@ void Mode_Controller::addObjectToTools(WorldObjectComponent* component)
 
     //add new designer widget to a tab (initialized with parent, so will automatically add to view)
     if(simulator)
-        Designer_Widget* tile = new Designer_Widget(component, properties, makeWidget, toolTabs[properties->getType()], true);
+        new Designer_Widget(component, properties, makeWidget, toolTabs[properties->getType()], true);
     else
-        Designer_Widget* tile = new Designer_Widget(component, properties, makeWidget, toolTabs[properties->getType()]);
+        new Designer_Widget(component, properties, makeWidget, toolTabs[properties->getType()]);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

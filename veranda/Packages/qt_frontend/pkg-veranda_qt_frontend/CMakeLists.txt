@@ -119,8 +119,8 @@ target_compile_definitions(${EXE_NAME}
 
 target_compile_options(${EXE_NAME}
     PRIVATE
-        $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wall -Wextra>
-        $<$<CXX_COMPILER_ID:MSVC>:/W4>
+        $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wall -Wextra -Werror>
+        $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
 )
 
 ## Pull in stuff exported from other packages

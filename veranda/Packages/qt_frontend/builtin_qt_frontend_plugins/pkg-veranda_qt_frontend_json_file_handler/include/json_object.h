@@ -21,14 +21,14 @@ class JsonObjectLoader : public WorldObjectLoader_If
      * \param[in] plugins Map of all plugins by their IID
      * \return true if the file can be loaded by this loader
      */
-    virtual bool canLoadFile(QString filePath, QMap<QString, WorldObjectComponent_Factory_If*> plugins){ return true; }
+    virtual bool canLoadFile(QString /*filePath*/, QMap<QString, WorldObjectComponent_Factory_If*> /*plugins*/){ return true; }
 
     /*!
      * \brief Stub function; no user input is required for this loader
      * \param[in] filePath Path to the file to check
      * \param[in] plugins Map of all plugins by their IID
      */
-    virtual void getUserOptions(QString filePath, QMap<QString, WorldObjectComponent_Factory_If*> plugins){}
+    virtual void getUserOptions(QString /*filePath*/, QMap<QString, WorldObjectComponent_Factory_If*> /*plugins*/){}
 
     /*!
      * \brief Loads an JSON file and converts it to a WorldObject

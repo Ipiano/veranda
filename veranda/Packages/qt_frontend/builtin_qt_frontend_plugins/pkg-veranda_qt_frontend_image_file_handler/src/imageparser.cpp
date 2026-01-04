@@ -64,7 +64,7 @@ QVector<Shape> ImageParser::parseImage(const QVector<QVector<QRgb> >& pixMap, co
     {
         for(int j=0; j<pixMap[i].size(); j++)
         {
-            blackWhite[i][j] = qGray(pixMap[i][j]) > colorThreshold;
+            blackWhite[i][j] = static_cast<uint64_t>(qGray(pixMap[i][j])) > colorThreshold;
         }
     }
 

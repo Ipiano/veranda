@@ -78,7 +78,7 @@ class VERANDA_SENSORS_DLL Lidar_Sensor : public WorldObjectComponent
          * \param[in] fraction Percentage of distance along the ray to the contact point
          * \return 1 if the point is ignored, the value passed as the fraction otherwise
          */
-        float32 ReportFixture(b2Fixture* fixture, const b2Vec2& point, const b2Vec2& normal, float32 fraction)
+        float32 ReportFixture(b2Fixture* fixture, const b2Vec2& point, const b2Vec2& /*normal*/, float32 fraction)
         {
             //Ignore non-colliding fixtures
             if(fixture->IsSensor() || fixture->GetFilterData().groupIndex == _collisionGroup) return 1;

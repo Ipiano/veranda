@@ -68,7 +68,7 @@ public:
      * \param[in,out] wheel The b2Body wheel to apply the constraint to
      * \param[in] radius Radius of the wheel (meters)
      */
-    static void applyNoSlideConstraint(b2Body* wheel, double radius)
+    static void applyNoSlideConstraint(b2Body* wheel, double /*radius*/)
     {
         static b2Vec2 _localWheelRightUnit = b2Vec2(0, 1);
 

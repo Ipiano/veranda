@@ -46,7 +46,7 @@ public:
      * \param[in] filePath Absolute path to the file to check
      * \param[in] Factories Map of the available factories in the system
      */
-    virtual void getUserOptions(QString filePath, QMap<QString, WorldObjectComponent_Factory_If*> factories){}
+    virtual void getUserOptions(QString /*filePath*/, QMap<QString, WorldObjectComponent_Factory_If*> /*factories*/){}
 
     /*!
      * \brief Load a file and return the world object stored in it
@@ -101,7 +101,7 @@ public:
      * \param[in] filePath Absolute path to the file to check
      * \param[in] factories Map of the available factories in the system
      */
-    virtual void getUserOptions(QString filePath, QMap<QString, WorldObjectComponent_Factory_If*> factories){}
+    virtual void getUserOptions(QString /*filePath*/, QMap<QString, WorldObjectComponent_Factory_If*> /*factories*/){}
 
     /*!
      * \brief Load a file and return the world objects stored in it

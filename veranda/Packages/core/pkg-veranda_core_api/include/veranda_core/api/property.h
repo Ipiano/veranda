@@ -115,7 +115,7 @@ public:
      * \param[in] _new The new value requested
      * \return The value that should be stored
      */
-    static QVariant bool_validator(const QVariant& _old, const QVariant& _new)
+    static QVariant bool_validator(const QVariant& /*_old*/, const QVariant& _new)
     {
         const static QStringList isTrue{"1", "true", "yes", "y"};
         const static QStringList isFalse{"0", "false", "no", "n"};
@@ -327,7 +327,7 @@ public:
      * \brief Copy constructor to watch the same property as another PropertyView
      * \param[in] other PropertyView to copy
      */
-    PropertyView(const PropertyView& other) : _origin(other._origin)
+    PropertyView(const PropertyView& other) : QObject(), _origin(other._origin)
     {
         init();
     }

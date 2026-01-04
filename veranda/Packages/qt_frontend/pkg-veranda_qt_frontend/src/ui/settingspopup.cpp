@@ -1,7 +1,7 @@
 #include "ui/settingspopup.h"
 #include "ui_settingspopup.h"
 
-settingspopup::settingspopup(QWindow *parent) :
+settingspopup::settingspopup(QWindow * /*parent*/) :
     settingsUi(new Ui::settingspopup)
 {
     settingsUi->setupUi(this);

@@ -58,9 +58,8 @@ function(make_plugin plugin_name plugin_moc_hdrs plugin_srcs)
 
     target_compile_options(${plugin_name}
         PRIVATE
-            $<$<CXX_COMPILER_ID:GNU>:-Wall>
-            $<$<CXX_COMPILER_ID:Clang>:-Wall>
-            $<$<CXX_COMPILER_ID:MSVC>:/W4>
+            $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wall -Wextra -Werror>
+            $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
     )
 
     ## Pull in stuff exported from other packages

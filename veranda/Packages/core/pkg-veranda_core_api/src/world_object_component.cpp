@@ -130,8 +130,6 @@ void WorldObjectComponent::registerBody(b2Body* bod, const QVector<Model*>& repr
 {
     _bodies[bod] = representations;
 
-    b2Vec2 start = bod->GetPosition();
-
     //Move body to it's location within local space of this body
     //which, in turn, is in the local space of its parent
     QTransform newLoc = bodyTransform(bod) * globalTransform;

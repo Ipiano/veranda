@@ -188,7 +188,7 @@ protected:
      *
      * \param[in] dt The amount of time simulated by the physics engine
      */
-    virtual void _worldTicked(const double dt){}
+    virtual void _worldTicked(const double /*dt*/){}
 
     /*!
      * \brief Slot indicating that inheriting types should update their models
@@ -211,11 +211,11 @@ protected:
      */
     virtual WorldObjectComponent* _clone(QObject* newParent=nullptr) = 0;
 
-    virtual void _generateBodies(b2World* world, object_id oId, b2Body* anchor) {}
+    virtual void _generateBodies(b2World* /*world*/, object_id /*oId*/, b2Body* /*anchor*/) {}
     virtual void _clearBodies() {}
     virtual void _connectChannels() {}
     virtual void _disconnectChannels() {}
-    virtual void _setROSNode(std::shared_ptr<rclcpp::Node> node) {}
+    virtual void _setROSNode(std::shared_ptr<rclcpp::Node> /*node*/) {}
 
 public:
     /*!

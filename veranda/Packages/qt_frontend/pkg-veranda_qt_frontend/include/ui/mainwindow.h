@@ -143,7 +143,7 @@ private:
 
 public slots:
     //Slots to indicate that physics settings changed
-    void physicsTickChanged(double rate_hz, double duration_s){}
+    void physicsTickChanged(double /*rate_hz*/, double /*duration_s*/) override {}
     void physicsTickMultiplierChanged(double mult);
     void physicsStopped();
     void physicsStarted();
@@ -160,7 +160,7 @@ public slots:
      * \brief Captures event on window close to forward it in a signal
      * \param[in] e The close event
      */
-    void closeEvent(QCloseEvent *e)
+    void closeEvent(QCloseEvent * /*e*/) override
     {
         emit windowClosed();
     }

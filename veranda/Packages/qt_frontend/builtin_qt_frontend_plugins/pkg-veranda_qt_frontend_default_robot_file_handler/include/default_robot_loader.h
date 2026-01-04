@@ -23,14 +23,14 @@ class DefaultRobotLoader : public WorldLoader_If
      * \param[in] plugins Map of plugins available
      * \return True
      */
-    virtual bool canLoadFile(QString filePath, QMap<QString, WorldObjectComponent_Factory_If*> plugins){ return true; }
+    virtual bool canLoadFile(QString /*filePath*/, QMap<QString, WorldObjectComponent_Factory_If*> /*plugins*/){ return true; }
 
     /*!
      * \brief Empty function that could be used to get user options
      * \param[in] filePath Path to the file to be loaded
      * \param[in] plugins Map of plugins available
      */
-    virtual void getUserOptions(QString filePath, QMap<QString, WorldObjectComponent_Factory_If*> plugins){}
+    virtual void getUserOptions(QString /*filePath*/, QMap<QString, WorldObjectComponent_Factory_If*> /*plugins*/){}
 
     /*!
      * \brief Creates a set of default objects and returns them instead of reading a file
