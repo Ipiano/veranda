@@ -51,30 +51,31 @@ The project was locked to ROS2 Ardent Apalone (2017), which is long EOL. Upgrade
   - Verify signal/slot connection syntax compatibility
   - Update any deprecated container methods
 - [ ] Test QGraphicsView rendering for Qt6 compatibility
-- [ ] Update `.pro` files for Qt6 or remove if no longer maintaining Qt Creator support
+- [x] Update `.pro` files for Qt6 or remove if no longer maintaining Qt Creator support
+  - ✅ .pro files removed
 
-### 1.3 Bare Bones CMake Modernization
+### 1.3 Bare Bones CMake Modernization ✅ COMPLETED
 
 **Priority**: High
 **Files**: All `CMakeLists.txt` files
 
 **Strategy**: This is a two-phase modernization approach:
-- **Phase 1.3 (this section)**: Minimum CMake updates required for Qt6 and ROS2 Jazzy compatibility
-- **Phase 2 (see section 2.6)**: Full modernization to modern CMake 3.16+ patterns
+- **Phase 1.3 (this section)**: Minimum CMake updates required for Qt6 and ROS2 Jazzy compatibility ✅
+- **Phase 2 (see section 2.6)**: Full modernization to modern CMake 3.16+ patterns ✅
 
-> **Detailed modernization plan**: See [TODO_modernize_cmake.md](TODO_modernize_cmake.md)
+> **Detailed modernization plan**: See [TODO_modernize_cmake.md](TODO_modernize_cmake.md) ✅ **COMPLETED**
 
 **Bare bones CMake tasks**:
-- [ ] Increase minimum CMake version from 3.5 to 3.16
-- [ ] Replace `qt5_use_modules()` with modern `target_link_libraries()`:
+- [x] Increase minimum CMake version from 3.5 to 3.28
+- [x] Replace `qt5_use_modules()` with modern `target_link_libraries()`:
   ```cmake
   # Old (deprecated)
   qt5_use_modules(${PROJECT_NAME} ${QT_COMPONENTS})
 
   # New
-  target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets)
+  target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Core Qt5::Gui Qt5::Widgets)
   ```
-- [ ] Update C++ standard from C++11 to C++17 (required for ROS2 Jazzy)
+- [x] Update C++ standard from C++11 to C++17 (required for ROS2 Jazzy)
 - [ ] Fix plugin discovery path (`main.cpp:105-106`) to use proper ROS2 resource paths or ament index
 
 ---
@@ -168,21 +169,21 @@ After the bare bones Qt6 upgrade (Phase 1.2), modernize to use Qt6-specific feat
 - [ ] Apply Qt6 concurrent processing patterns
 - [ ] Consider QML integration for future UI work
 
-### 2.6 Full CMake Modernization (Post-Upgrade)
+### 2.6 Full CMake Modernization (Post-Upgrade) ✅ COMPLETED
 
 **Priority**: Medium
 **Files**: All `CMakeLists.txt` files
 
-After bare bones CMake updates (Phase 1.3), apply full modern CMake patterns.
+Full modern CMake patterns have been applied.
 
-> **Detailed plan**: See [TODO_modernize_cmake.md](TODO_modernize_cmake.md)
+> **Detailed plan**: See [TODO_modernize_cmake.md](TODO_modernize_cmake.md) ✅ **COMPLETED**
 
-- [ ] Replace global `include_directories()` with `target_include_directories()`
-- [ ] Replace global `add_definitions()` with `target_compile_definitions()`
-- [ ] Use generator expressions for platform-specific settings
-- [ ] Export proper CMake targets for downstream packages
-- [ ] Create shared CMake module for common patterns
-- [ ] Replace embedded Box2D with `FetchContent` or `find_package()`
+- [x] Replace global `include_directories()` with `target_include_directories()`
+- [x] Replace global `add_definitions()` with `target_compile_definitions()`
+- [x] Use generator expressions for platform-specific settings
+- [ ] Export proper CMake targets for downstream packages (optional future improvement)
+- [ ] Create shared CMake module for common patterns (optional future improvement)
+- [ ] Replace embedded Box2D with `FetchContent` or `find_package()` (optional future improvement)
 
 ---
 
@@ -311,8 +312,10 @@ Phase 1.1 (ROS2 Upgrade) ✅ COMPLETED
 Phase 1.2 (Qt6 Upgrade)
     └── Phase 3.3 (UI Optimization) - May have different performance characteristics
 
-Phase 1.3 (CMake Modernization)
+Phase 1.3 (CMake Modernization) ✅ COMPLETED
     └── Phase 4.1 (Testing) - Modern CMake makes test integration easier
+
+Phase 2.6 (Full CMake Modernization) ✅ COMPLETED
 
 Phase 2.2 (Wrappers) + Phase 2.3 (Testability)
     └── Phase 4.1 (Testing) - Cleaner architecture enables better tests
@@ -325,7 +328,7 @@ Detailed implementation plans for specific tasks:
 - **[TODO_update_ros.md](TODO_update_ros.md)**: ROS2 upgrade to Jazzy Jalisco ✅ **COMPLETED**
 - **[TODO_upgrade_qt.md](TODO_upgrade_qt.md)**: Qt 5 to Qt 6 upgrade (bare bones)
 - **[TODO_modern_qt6.md](TODO_modern_qt6.md)**: Qt 6 modernization (post-upgrade)
-- **[TODO_modernize_cmake.md](TODO_modernize_cmake.md)**: Full CMake modernization
+- **[TODO_modernize_cmake.md](TODO_modernize_cmake.md)**: Full CMake modernization ✅ **COMPLETED**
 - **[TODO_modern_ros.md](TODO_modern_ros.md)**: Modern ROS2 threading architecture (optional improvements)
 - **[TODO_component_ros_separation.md](TODO_component_ros_separation.md)**: Component testability improvements
 - **[TODO_raycasting_optimization.md](TODO_raycasting_optimization.md)**: Sensor performance optimization

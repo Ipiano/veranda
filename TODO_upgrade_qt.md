@@ -11,7 +11,7 @@ This document outlines the work required to upgrade Veranda from Qt 5 to Qt 6.
 
 - **Current Qt Version**: Qt 5.12+ required (5.15 LTS on Linux, 5.12 minimum for Windows/macOS per ROS Jazzy)
 - **Target Qt Version**: Qt 6.x (6.5 LTS or 6.6+ recommended)
-- **Build Systems**: CMake 3.16+ (primary), QMake .pro files (IDE support only)
+- **Build Systems**: CMake 3.28+ (primary) - QMake .pro files removed
 
 ### Completed Work
 
@@ -22,7 +22,7 @@ The following Phase 1 preparation tasks have been completed:
 - ✅ Replaced deprecated `qt5_use_modules()` with `target_link_libraries(Qt5::Core, etc.)`
 - ✅ Replaced `add_definitions()` with `target_compile_definitions()`
 - ✅ Used generator expressions for platform-specific defines (e.g., `$<$<PLATFORM_ID:Windows>:WINDOWS>`)
-- ✅ Updated CMake minimum version to 3.16
+- ✅ Updated CMake minimum version to 3.28
 - ✅ Updated C++ standard to C++17
 - ✅ Migrated `QRegExp` to `QRegularExpression` in mode_controller.cpp
 - ✅ Added explicit `qt5_wrap_cpp()` for header-only QObject classes (Model, Property, PropertyView)
@@ -56,9 +56,9 @@ add_compile_definitions(QT_DEPRECATED_WARNINGS)
 add_compile_definitions(QT_DISABLE_DEPRECATED_BEFORE=0x060000)
 ```
 
-### 2. Consider Build System Migration
+### 2. Consider Build System Migration ✅ DONE
 
-Qt 6 strongly recommends CMake over QMake. The project already uses CMake as the primary build system, so this is not a blocker. The .pro files are for IDE support only.
+Qt 6 strongly recommends CMake over QMake. The project uses CMake as the primary build system. The legacy .pro files have been removed.
 
 ---
 
@@ -481,14 +481,9 @@ Qt 6 changes the default high DPI scaling behavior.
 | `ackermann_steer.cpp` | qRegisterMetaType |
 | `simulator_core.cpp` | qRegisterMetaType |
 
-### .pro Files (Optional Update)
+### .pro Files ✅ REMOVED
 
-The .pro files are for IDE support only, but should be updated for completeness:
-
-```qmake
-# Add Qt 6 compatibility
-greaterThan(QT_MAJOR_VERSION, 5): QT += core5compat  # If using Qt5Compat
-```
+> **Note**: The .pro files have been removed as part of the CMake modernization work (commit `2e21de6`). This section is no longer applicable.
 
 ---
 
@@ -512,13 +507,13 @@ greaterThan(QT_MAJOR_VERSION, 5): QT += core5compat  # If using Qt5Compat
 
 This upgrade should be done in phases:
 
-| Phase | Description |
-|-------|-------------|
-| 1. CMake updates | All CMakeLists.txt files |
-| 2. QRegExp migration | mode_controller.cpp |
-| 3. Other code changes | Various files |
-| 4. Testing & debugging | Full application |
-| 5. .pro file updates | Optional |
+| Phase | Description | Status |
+|-------|-------------|--------|
+| 1. CMake updates | All CMakeLists.txt files | ✅ Done |
+| 2. QRegExp migration | mode_controller.cpp | |
+| 3. Other code changes | Various files | |
+| 4. Testing & debugging | Full application | |
+| 5. .pro file updates | Optional | ✅ Removed |
 
 ---
 

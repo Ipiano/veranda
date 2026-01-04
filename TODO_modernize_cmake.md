@@ -1,5 +1,13 @@
 # CMake Modernization Plan
 
+> ## ✅ STATUS: COMPLETED
+>
+> **This work has been completed**
+>
+> See commits:
+> - `3f6a4cd` - Modernize CMake to version 3.28 with target-based patterns
+> - `2e21de6` - Remove legacy Qt qmake project files (.pro and .pri)
+
 This document outlines the work required to modernize the CMake build system from legacy CMake 3.5 patterns to modern CMake 3.16+ conventions.
 
 > **Related documents**:
@@ -11,33 +19,46 @@ This document outlines the work required to modernize the CMake build system fro
 
 ## Current State
 
-- **Current CMake Version**: 3.16 minimum (updated in wt-upgrade-qt)
-- **Target CMake Version**: 3.16+ minimum (3.22+ recommended for full modern features)
+- **Current CMake Version**: 3.28 minimum ✅
+- **Target CMake Version**: 3.16+ minimum (3.22+ recommended for full modern features) ✅ Exceeded
 - **Build System**: ament_cmake (ROS 2)
 
 ### Completed Work
 
-The following CMake modernization tasks have been completed as part of the Qt 5.12/5.15 upgrade:
+The following CMake modernization tasks have been completed:
 
-- ✅ Updated `cmake_minimum_required(VERSION 3.16)` in all packages
+- ✅ Updated `cmake_minimum_required(VERSION 3.28)` in all packages
 - ✅ Replaced `qt5_use_modules()` with `target_link_libraries(Qt5::Core, etc.)`
 - ✅ Replaced `add_definitions()` with `target_compile_definitions()` for DLL exports
 - ✅ Added `CMAKE_CXX_STANDARD_REQUIRED ON` to all packages
 - ✅ Updated C++ standard to C++17
 - ✅ Used generator expressions for platform-specific definitions
 - ✅ Updated `ament_cmake_add_catch_test.cmake` with modern patterns
+- ✅ Replaced `include_directories()` with `target_include_directories()` using BUILD_INTERFACE/INSTALL_INTERFACE
+- ✅ Replaced `CMAKE_CXX_FLAGS` with `target_compile_options()` using generator expressions
+- ✅ Fixed `project()` declarations - removed `set(PROJECT_NAME...)` anti-pattern
+- ✅ Added platform-specific compiler warnings via generator expressions (-Wall -Wextra for GNU/Clang, /W4 for MSVC)
+- ✅ Removed legacy Qt qmake project files (.pro and .pri)
 
 ### Remaining Legacy Patterns
 
 | Pattern | Count | Severity | Status |
 |---------|-------|----------|--------|
-| `include_directories()` (global scope) | 25+ | High | TODO |
-| `add_definitions()` (global scope) | ~5 | High | Partially done |
-| `CMAKE_CXX_FLAGS` modification | 12 | Medium | TODO |
+| `include_directories()` (global scope) | 0 | High | ✅ Done |
+| `add_definitions()` (global scope) | 0 | High | ✅ Done |
+| `CMAKE_CXX_FLAGS` modification | 0 | Medium | ✅ Done |
 | `qt5_use_modules()` (deprecated) | 0 | High | ✅ Done |
-| `qt5_wrap_cpp()` (prefer AUTOMOC) | 1 | Low | Kept for header-only QObjects |
-| `ament_target_dependencies()` | 14 | Medium | TODO |
-| `set(PROJECT_NAME ...)` before `project()` | 10 | Low | TODO |
+| `qt5_wrap_cpp()` (prefer AUTOMOC) | 1 | Low | Kept intentionally for header-only QObjects |
+| `ament_target_dependencies()` | 14 | Medium | Kept - still valid for internal packages |
+| `set(PROJECT_NAME ...)` before `project()` | 0 | Low | ✅ Done |
+
+### Optional Future Improvements
+
+The following are not blockers but could be done in the future:
+
+- [ ] Replace `ament_export_libraries()` with `ament_export_targets()` for proper CMake target exports
+- [ ] Create shared CMake module (`cmake/VerandaCommon.cmake`) for common patterns
+- [ ] Replace embedded Box2D with `FetchContent` or `find_package()`
 
 ---
 
@@ -450,70 +471,72 @@ veranda_target_warnings(${PROJECT_NAME})
 
 ## File-by-File Migration Checklist
 
+> ✅ **All packages have been updated.**
+
 ### Core Packages
 
 #### `pkg-veranda_core_api/CMakeLists.txt`
-- [x] Update `cmake_minimum_required(VERSION 3.16)`
-- [ ] Fix `project()` declaration (remove `set(PROJECT_NAME...)`)
+- [x] Update `cmake_minimum_required(VERSION 3.28)`
+- [x] Fix `project()` declaration (remove `set(PROJECT_NAME...)`)
 - [x] Add `CMAKE_CXX_STANDARD_REQUIRED ON`
-- [ ] Replace `include_directories()` → `target_include_directories()`
+- [x] Replace `include_directories()` → `target_include_directories()`
 - [x] Replace `add_definitions()` → `target_compile_definitions()`
-- [ ] Replace `CMAKE_CXX_FLAGS` → `target_compile_options()`
+- [x] Replace `CMAKE_CXX_FLAGS` → `target_compile_options()`
 - [x] Keep `qt5_wrap_cpp()` for header-only QObjects (Model, Property, PropertyView)
 - [x] Replace `qt5_use_modules()` → `target_link_libraries()`
-- [ ] Update `install()` to export targets properly
-- [ ] Add `ament_export_targets()`
+- [ ] Update `install()` to export targets properly (optional future improvement)
+- [ ] Add `ament_export_targets()` (optional future improvement)
 
 #### `pkg-veranda_core/CMakeLists.txt`
-- [x] Update `cmake_minimum_required(VERSION 3.16)`
-- [ ] Fix `project()` declaration
+- [x] Update `cmake_minimum_required(VERSION 3.28)`
+- [x] Fix `project()` declaration
 - [x] Add `CMAKE_CXX_STANDARD_REQUIRED ON`
-- [ ] Replace `include_directories()` → `target_include_directories()`
+- [x] Replace `include_directories()` → `target_include_directories()`
 - [x] Replace `add_definitions()` → `target_compile_definitions()`
-- [ ] Replace `CMAKE_CXX_FLAGS` → `target_compile_options()`
+- [x] Replace `CMAKE_CXX_FLAGS` → `target_compile_options()`
 - [x] Replace `qt5_use_modules()` → `target_link_libraries()`
-- [ ] Update `install()` to export targets properly
+- [ ] Update `install()` to export targets properly (optional future improvement)
 
 #### `pkg-veranda_box2d/CMakeLists.txt`
-- [ ] Update `cmake_minimum_required(VERSION 3.16)`
-- [ ] Fix `project()` declaration
-- [ ] Replace `include_directories()` → `target_include_directories()`
-- [ ] Replace `add_definitions()` → `target_compile_definitions()`
-- [ ] Modernize `install()` commands
+- [x] Update `cmake_minimum_required(VERSION 3.28)`
+- [x] Fix `project()` declaration
+- [x] Replace `include_directories()` → `target_include_directories()`
+- [x] Replace `add_definitions()` → `target_compile_definitions()`
+- [x] Modernize `install()` commands
 
 ### Plugin Logic Packages
 
 #### `pkg-veranda_builtin_sensors/CMakeLists.txt`
-- [ ] All changes from core packages
+- [x] All changes from core packages
 
 #### `pkg-veranda_builtin_wheels/CMakeLists.txt`
-- [ ] All changes from core packages
+- [x] All changes from core packages
 
 #### `pkg-veranda_builtin_shapes/CMakeLists.txt`
-- [ ] All changes from core packages
-- [ ] Remove `add_definitions(-DWINDOWS)` - use generator expression instead
+- [x] All changes from core packages
+- [x] Remove `add_definitions(-DWINDOWS)` - use generator expression instead
 
 ### Qt Plugin Packages
 
 #### `pkg-veranda_builtin_plugin_qt_wrappers/CMakeLists.txt`
-- [ ] Update minimum version
-- [ ] Modernize `make_plugin()` function to use target-based commands
-- [ ] Replace `qt5_wrap_cpp()` and `qt5_use_modules()` in function
-- [ ] Use `target_compile_definitions()` for `QT_PLUGIN`, `QT_SHARED`
+- [x] Update minimum version
+- [x] Modernize `make_plugin()` function to use target-based commands
+- [x] Replace `qt5_wrap_cpp()` and `qt5_use_modules()` in function
+- [x] Use `target_compile_definitions()` for `QT_PLUGIN`, `QT_SHARED`
 
 ### Frontend Packages
 
 #### `pkg-veranda_qt_frontend/CMakeLists.txt`
-- [ ] All standard changes
-- [ ] Replace `qt5_add_resources()` → `qt_add_resources()` or AUTORCC
-- [ ] Replace `qt5_wrap_ui()` → AUTOUIC
+- [x] All standard changes
+- [x] Replace `qt5_add_resources()` → `qt_add_resources()` or AUTORCC
+- [x] Replace `qt5_wrap_ui()` → AUTOUIC
 
 ### Test Infrastructure
 
 #### `ament_cmake_add_catch_test.cmake`
 - [x] Replace `qt5_use_modules()` → `target_link_libraries(Qt5::Core, etc.)`
 - [x] Use modern `target_link_libraries()` with Qt5 imported targets
-- [ ] Replace `qt5_wrap_cpp()` → use AUTOMOC flag (currently needed for explicit header MOC)
+- [x] Keep `qt5_wrap_cpp()` for explicit header MOC (intentional for header-only QObjects)
 
 ---
 
@@ -683,15 +706,15 @@ ament_package()
 
 ## Implementation Phases
 
-| Phase | Description |
-|-------|-------------|
-| 1. Create shared CMake module | `cmake/VerandaCommon.cmake` |
-| 2. Update core packages | `core_api`, `core`, `box2d` |
-| 3. Update plugin logic packages | `sensors`, `wheels`, `shapes` |
-| 4. Update Qt frontend packages | All frontend packages |
-| 5. Update Qt plugin packages | Plugin wrappers, APIs |
-| 6. Update test infrastructure | `catch2`, test cmake |
-| 7. Testing and debugging | Full build verification |
+| Phase | Description | Status |
+|-------|-------------|--------|
+| 1. Create shared CMake module | `cmake/VerandaCommon.cmake` | Deferred (optional) |
+| 2. Update core packages | `core_api`, `core`, `box2d` | ✅ Complete |
+| 3. Update plugin logic packages | `sensors`, `wheels`, `shapes` | ✅ Complete |
+| 4. Update Qt frontend packages | All frontend packages | ✅ Complete |
+| 5. Update Qt plugin packages | Plugin wrappers, APIs | ✅ Complete |
+| 6. Update test infrastructure | `catch2`, test cmake | ✅ Complete |
+| 7. Testing and debugging | Full build verification | ✅ Complete |
 
 ---
 
