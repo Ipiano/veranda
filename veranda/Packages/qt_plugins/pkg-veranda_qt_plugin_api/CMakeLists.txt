@@ -1,19 +1,19 @@
 ###########
 ## SETUP ##
 ###########
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.28)
 
-set(PROJECT_NAME veranda_qt_plugin_api)
+project(veranda_qt_plugin_api
+    VERSION 0.1.0
+    LANGUAGES CXX
+)
+
 set(HEADER_INSTALL_DIR include/${PROJECT_NAME})
-
-project(${PROJECT_NAME})
 
 ## Compile as C++11
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-if(NOT WIN32)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-endif()
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 ## Find required ROS packages
 find_package(ament_cmake REQUIRED)

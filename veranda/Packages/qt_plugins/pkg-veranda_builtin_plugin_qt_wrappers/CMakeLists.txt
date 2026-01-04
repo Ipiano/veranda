@@ -1,13 +1,9 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.28)
 project(veranda_builtin_plugin_qt_wrappers)
 
 ## Compile as C++17 Library
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-if(NOT WIN32)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-endif()
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(ament_cmake REQUIRED)
 find_package(veranda_qt_plugin_api REQUIRED)
@@ -26,12 +22,6 @@ find_package(Qt5 5.12 REQUIRED COMPONENTS
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 
-## Enable Qt deprecation warnings to prepare for future Qt 6 migration
-add_compile_definitions(QT_DEPRECATED_WARNINGS QT_PLUGIN QT_SHARED)
-
-include_directories( include )
-include_directories( ${CMAKE_BINARY_DIR} )
-
 ## TODO If possible: Figure out how to mark Qt as a dependency
 ament_export_dependencies(
     rclcpp
@@ -42,13 +32,6 @@ ament_export_dependencies(
     veranda_builtin_shapes
 )
 
-# Need to include this early so that moc is happy
-include_directories(${veranda_core_api_INCLUDE_DIRS})
-include_directories(${veranda_qt_plugin_api_INCLUDE_DIRS})
-include_directories(${veranda_builtin_sensors_INCLUDE_DIRS})
-include_directories(${veranda_builtin_wheels_INCLUDE_DIRS})
-include_directories(${veranda_builtin_shapes_INCLUDE_DIRS})
-
 ###########################################
 ## Make a plugin from source and headers ##
 ###########################################
@@ -57,6 +40,29 @@ function(make_plugin plugin_name plugin_moc_hdrs plugin_srcs plugin_roslib)
     ## Build the plugin lib
     ## AUTOMOC will automatically generate MOC files for headers with Q_OBJECT
     add_library(${plugin_name} SHARED ${plugin_srcs} ${plugin_moc_hdrs})
+
+    target_compile_features(${plugin_name} PUBLIC cxx_std_17)
+
+    target_include_directories(${plugin_name}
+        PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+            $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
+        PRIVATE
+            ${CMAKE_CURRENT_BINARY_DIR}
+    )
+
+    target_compile_definitions(${plugin_name}
+        PRIVATE
+            QT_DEPRECATED_WARNINGS
+            QT_PLUGIN
+            QT_SHARED
+    )
+
+    target_compile_options(${plugin_name}
+        PRIVATE
+            $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wall -Wextra>
+            $<$<CXX_COMPILER_ID:MSVC>:/W4>
+    )
 
     ## Pull in stuff exported from other packages
     ament_target_dependencies(${plugin_name}
