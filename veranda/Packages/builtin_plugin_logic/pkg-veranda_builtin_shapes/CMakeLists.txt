@@ -1,6 +1,10 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.28)
 
-set(PROJECT_NAME veranda_builtin_shapes)
+project(veranda_builtin_shapes
+    VERSION 0.1.0
+    LANGUAGES CXX
+)
+
 set(HEADER_INSTALL_DIR include/${PROJECT_NAME})
 
 ## On ubuntu (and presumably other unix), install/lib is
@@ -11,15 +15,9 @@ if(WIN32)
     set(LIB_INSTALL_DIR bin)
 endif()
 
-project(${PROJECT_NAME})
-
 ## Compile as C++17 Library
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-if(NOT WIN32)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-endif()
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -35,12 +33,6 @@ find_package(Qt5 5.12 REQUIRED COMPONENTS
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
-
-## Enable Qt deprecation warnings to prepare for future Qt 6 migration
-add_compile_definitions(QT_DEPRECATED_WARNINGS)
-
-include_directories( include include/veranda_shapes )
-include_directories( ${CMAKE_BINARY_DIR} )
 
 ament_export_dependencies(
     rclcpp
@@ -72,10 +64,6 @@ set(CPP_SRCS
 ## Build ##
 ###########
 
-# Need to include this early so that moc is happy
-include_directories(${veranda_core_api_INCLUDE_DIRS})
-include_directories(${veranda_box2d_INCLUDE_DIRS})
-
 # Use new MOC policy if CMake 3.10+
 if(NOT ${CMAKE_VERSION} VERSION_LESS "3.10")
     cmake_policy(SET CMP0071 NEW)
@@ -85,14 +73,31 @@ endif()
 ## AUTOMOC will automatically generate MOC files for headers with Q_OBJECT
 add_library(${PROJECT_NAME} SHARED ${CPP_SRCS} ${MOC_HDRS})
 
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
+
+find_package(OpenGL REQUIRED)
+
+target_include_directories(${PROJECT_NAME}
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/veranda_shapes
+        ${CMAKE_CURRENT_BINARY_DIR}
+)
+
 target_compile_definitions(${PROJECT_NAME}
     PRIVATE
         VERANDA_SHAPES_BUILD_DLL
         $<$<PLATFORM_ID:Windows>:WINDOWS>
+        QT_DEPRECATED_WARNINGS
 )
 
-find_package(OpenGL REQUIRED)
-include_directories( ${OPENGL_INCLUDE_DIRS} )
+target_compile_options(${PROJECT_NAME}
+    PRIVATE
+        $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wall -Wextra>
+        $<$<CXX_COMPILER_ID:MSVC>:/W4>
+)
 
 ## Pull in stuff exported from other packages
 ament_target_dependencies(${PROJECT_NAME}

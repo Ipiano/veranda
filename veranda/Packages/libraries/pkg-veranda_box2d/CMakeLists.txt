@@ -1,9 +1,13 @@
 ###########
 ## SETUP ##
 ###########
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.28)
 
-set(PROJECT_NAME veranda_box2d)
+project(veranda_box2d
+    VERSION 0.1.0
+    LANGUAGES CXX
+)
+
 set(HEADER_INSTALL_DIR include/${PROJECT_NAME})
 
 ## On ubuntu (and presumably other unix), install/lib is
@@ -14,14 +18,10 @@ if(WIN32)
     set(LIB_INSTALL_DIR bin)
 endif()
 
-project(${PROJECT_NAME})
-
-## Compile as C++11 Library
+## Compile as C++17 Library
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-add_definitions(-DBOX2D_DLL)
 find_package(ament_cmake REQUIRED)
 
 ament_export_include_directories(${HEADER_INSTALL_DIR})
@@ -92,13 +92,22 @@ set(BOX2D_SRCS
 ###########
 ## Build ##
 ###########
-## Locations of header files
-include_directories(
-  ${BOX2D_SUBPATH}
-)
 
 ## Build Box2d
 add_library(${PROJECT_NAME} SHARED ${BOX2D_SRCS})
+
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
+
+target_include_directories(${PROJECT_NAME}
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${BOX2D_SUBPATH}>
+        $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
+)
+
+target_compile_definitions(${PROJECT_NAME}
+    PRIVATE
+        BOX2D_DLL
+)
 
 #############
 ## Install ##
