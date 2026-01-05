@@ -90,10 +90,10 @@ void Ackermann_Steer::_jointWheels()
 
         //Re-register the wheel bodies to get them positioned where they need to
         //be relative to the local origin
-        _rWheelBody->SetTransform(b2Vec2(_l1.get().toDouble()/2.0, 0), 90*DEG2RAD);
+        _rWheelBody->SetTransform(b2Vec2(_l1.get().toDouble()/2.0, 0), static_cast<float>(90*DEG2RAD));
         registerBody(_rWheelBody, {_rWheelModel});
 
-        _lWheelBody->SetTransform(b2Vec2(-_l1.get().toDouble()/2.0, 0), 90*DEG2RAD);
+        _lWheelBody->SetTransform(b2Vec2(-_l1.get().toDouble()/2.0, 0), static_cast<float>(90*DEG2RAD));
         registerBody(_lWheelBody, {_lWheelModel});
 
         //qDebug() << "Main body:" << _cBody->GetWorldCenter().x << _cBody->GetWorldCenter().y << _cBody->GetAngle();

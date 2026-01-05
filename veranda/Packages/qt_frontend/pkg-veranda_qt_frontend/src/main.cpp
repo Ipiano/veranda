@@ -43,7 +43,7 @@ using namespace std;
 
 int main(int argc, char** argv)
 {
-    QTextStream cout(stdout);
+    QTextStream qout(stdout);
 
    /*************************************
     * Setup ROS and Qt to play nice
