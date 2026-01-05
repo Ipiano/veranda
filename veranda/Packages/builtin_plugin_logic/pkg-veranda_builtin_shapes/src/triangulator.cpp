@@ -18,7 +18,7 @@ void simplify(Shape &s, const double &crossThreshold)
 QPolygonF simplify(const QPolygonF &p, const double& crossThreshold)
 {
     QPolygonF out;
-    out.resize(p.size());
+    out.resize(static_cast<int>(p.size()));
 
     PolygonIterator inStart((QPolygonF::iterator)p.begin()), inEnd((QPolygonF::iterator)p.end()), outStart((QPolygonF::iterator)out.begin());
     PolygonIterator outEnd = psimpl::simplify_douglas_peucker<2, PolygonIterator, PolygonIterator>
