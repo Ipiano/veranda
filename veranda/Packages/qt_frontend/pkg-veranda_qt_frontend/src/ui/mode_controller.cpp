@@ -213,24 +213,24 @@ QVector<WorldObjectComponent*> Mode_Controller::getComponents()
 //adds a world object to available tools and takes care of tab selection/new tab
 void Mode_Controller::addObjectToTools(WorldObjectComponent* component)
 {
-    WorldObjectProperties* properties = new WorldObjectProperties(component, this);
+    WorldObjectProperties* objectProperties = new WorldObjectProperties(component, this);
 
     //if tab does not exist, create it then add new designer widget
-    if(toolTabs[properties->getType()] == nullptr)
-    {       
-        toolTabs[properties->getType()] = new QListWidget();
-        tabs->addTab(toolTabs[properties->getType()], properties->getType());
-        toolTabs[properties->getType()]->setViewMode(QListWidget::IconMode);
-        toolTabs[properties->getType()]->setResizeMode(QListWidget::Adjust);
-        toolTabs[properties->getType()]->setMovement(QListView::Static);
-        toolTabs[properties->getType()]->setIconSize(QSize(150, 150));
+    if(toolTabs[objectProperties->getType()] == nullptr)
+    {
+        toolTabs[objectProperties->getType()] = new QListWidget();
+        tabs->addTab(toolTabs[objectProperties->getType()], objectProperties->getType());
+        toolTabs[objectProperties->getType()]->setViewMode(QListWidget::IconMode);
+        toolTabs[objectProperties->getType()]->setResizeMode(QListWidget::Adjust);
+        toolTabs[objectProperties->getType()]->setMovement(QListView::Static);
+        toolTabs[objectProperties->getType()]->setIconSize(QSize(150, 150));
     }
 
     //add new designer widget to a tab (initialized with parent, so will automatically add to view)
     if(simulator)
-        new Designer_Widget(component, properties, makeWidget, toolTabs[properties->getType()], true);
+        new Designer_Widget(component, objectProperties, makeWidget, toolTabs[objectProperties->getType()], true);
     else
-        new Designer_Widget(component, properties, makeWidget, toolTabs[properties->getType()]);
+        new Designer_Widget(component, objectProperties, makeWidget, toolTabs[objectProperties->getType()]);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
