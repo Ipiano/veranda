@@ -72,9 +72,9 @@ class VERANDA_SHAPES_DLL Polygon : public WorldObjectComponent
             {
                 QVariantList pnt;
                 QSequentialIterable iterable2 = vi.value<QSequentialIterable>();
-                for(const QVariant& v : iterable2)
+                for(const QVariant& val : iterable2)
                 {
-                    pnt.append(v.toDouble());
+                    pnt.append(val.toDouble());
                     if(pnt.size() == 2) break;
                 }
                 poly.append(QVariant(pnt));

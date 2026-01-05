@@ -81,7 +81,7 @@ void Polygon::_clearBodies()
 
 void toPolygon(const QVariantList& points, QPolygonF& poly)
 {
-    poly.resize(points.size());
+    poly.resize(static_cast<int>(points.size()));
     auto iter = poly.begin();
     for(const QVariant& v : points)
     {
@@ -110,7 +110,7 @@ void Polygon::makeTriangles()
     toPolygon(tmp, sh.outer);
 
     tmp = _innerShapes.get().value<QVariantList>();
-    sh.inner.resize(tmp.size());
+    sh.inner.resize(static_cast<int>(tmp.size()));
     auto iter = sh.inner.begin();
     for(const QVariant& v : tmp)
         toPolygon(v.value<QVariantList>(), *(iter++));

@@ -187,7 +187,7 @@ void Lidar_Sensor::_buildModels()
 
     //Build new sensor-hits shapes
     scan_image.clear();
-    scan_image.resize(data->ranges.size());
+    scan_image.resize(static_cast<int>(data->ranges.size()));
 
     double curr_angle = data->angle_min;
     double scan_radius = radius.get().toDouble();
