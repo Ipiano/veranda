@@ -41,7 +41,7 @@ void WorldObject::_clearBodies()
     _world = nullptr;
 }
 
-void WorldObject::_generateBodies(b2World* world, object_id oId, b2Body* anchorBody)
+void WorldObject::_generateBodies(b2World* world, object_id /*oId*/, b2Body* /*anchorBody*/)
 {
     clearBodies();
     _world = world;

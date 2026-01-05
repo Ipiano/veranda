@@ -8,7 +8,7 @@
 #include <QtMath>
 #include <QString>
 
-JoystickPrototype::JoystickPrototype(QWindow *parent) :
+JoystickPrototype::JoystickPrototype(QWindow * /*parent*/) :
     joystickUi(new Ui::JoystickPrototype)
 {
     joystickUi->setupUi(this);
@@ -254,7 +254,6 @@ void JoystickWidget::paintEvent(QPaintEvent *event)
 
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
-    painter.setRenderHint(QPainter::HighQualityAntialiasing);
 
     //draw background circle white
     QPen outerPen(Qt::black, 2);

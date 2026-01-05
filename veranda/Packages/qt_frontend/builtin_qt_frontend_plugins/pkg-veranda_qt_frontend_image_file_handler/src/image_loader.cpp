@@ -109,7 +109,7 @@ QVector<WorldObject *> ImageLoader::loadFile(QString filePath, QMap<QString, Wor
             objects.push_back(obj);
         }
         return objects;
-    }catch(std::exception ex){
+    }catch(const std::exception&){
         qDebug() << "Unable to load image file: " << QDir(filePath).absolutePath();
     }
 
@@ -133,7 +133,7 @@ bool ImageLoader::canLoadFile(QString filePath, QMap<QString, WorldObjectCompone
     return true;
 }
 
-void ImageLoader::getUserOptions(QString filePath, QMap<QString, WorldObjectComponent_Factory_If *> plugins)
+void ImageLoader::getUserOptions(QString filePath, QMap<QString, WorldObjectComponent_Factory_If *> /*plugins*/)
 {
     QImage img(filePath);
     if(img.isNull()) throw std::exception();

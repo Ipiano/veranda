@@ -26,7 +26,7 @@ public:
      * \brief Listens for the close event of the window and forwards it in a signal
      * \param[in] e The close event happening
      */
-    void closeEvent(QCloseEvent *e)
+    void closeEvent(QCloseEvent * /*e*/) override
     {
         emit settingsClosed();
     }

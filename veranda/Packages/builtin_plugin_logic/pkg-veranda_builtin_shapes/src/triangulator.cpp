@@ -18,7 +18,7 @@ void simplify(Shape &s, const double &crossThreshold)
 QPolygonF simplify(const QPolygonF &p, const double& crossThreshold)
 {
     QPolygonF out;
-    out.resize(p.size());
+    out.resize(static_cast<int>(p.size()));
 
     PolygonIterator inStart((QPolygonF::iterator)p.begin()), inEnd((QPolygonF::iterator)p.end()), outStart((QPolygonF::iterator)out.begin());
     PolygonIterator outEnd = psimpl::simplify_douglas_peucker<2, PolygonIterator, PolygonIterator>
@@ -85,7 +85,7 @@ void GLTess_err( GLenum error, void* data );
  * \param[in] flag Unused
  * \param[in,out] data Custom data pointer - Points to GLTessData
  */
-void GLTess_edge( GLboolean flag, void* data ){}
+void GLTess_edge( GLboolean /*flag*/, void* /*data*/){}
 
 /*!
  * \brief
@@ -164,7 +164,7 @@ QVector<QPolygonF> triangulate(const Shape& s)
     return tData.triangles;
 }
 
-void GLTess_begin( GLenum type, void* data )
+void GLTess_begin( GLenum /*type*/, void* data )
 {
     GLTessData* tData = static_cast<GLTessData*>(data);
 
@@ -182,8 +182,8 @@ void GLTess_vert( void* vert, void* data )
     tData->triangles.last().push_back(QPointF(vData[0], vData[1]));
 }
 
-void GLTess_combine( GLdouble coords[3], void* verts[4],
-                     GLfloat weight[4], void** out, void* data )
+void GLTess_combine( GLdouble coords[3], void* /*verts*/[4],
+                     GLfloat /*weight*/[4], void** out, void* data )
 {
     GLTessData* tData = static_cast<GLTessData*>(data);
 

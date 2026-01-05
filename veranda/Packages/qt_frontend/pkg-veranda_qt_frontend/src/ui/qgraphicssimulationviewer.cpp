@@ -131,6 +131,10 @@ QGraphicsItem* QGraphicsSimulationViewer::_drawb2Shape(b2Shape* s, QGraphicsItem
 
             newShape = new QGraphicsPolygonItem(qpoly, itemParent);
         }
+        break;
+        default:
+            // Unhandled shape types (e_chain, e_typeCount)
+            break;
     }
     return newShape;
 }
@@ -233,7 +237,7 @@ void QGraphicsSimulationViewer::modelHinted(Model *m)
  * When a model moves, we find the QGraphicsItem that represents it
  * and move that the same amount
  */
-void QGraphicsSimulationViewer::modelMoved(Model* m, const double &dx, const double &dy, const double &dt)
+void QGraphicsSimulationViewer::modelMoved(Model* m, const double &dx, const double &dy, const double & /*dt*/)
 {
     double x, y, t;
     m->getTransform(x, y, t);
@@ -384,7 +388,7 @@ void QGraphicsSimulationViewer::setToolsEnabled(bool enabled)
     }
 }
 
-void QGraphicsSimulationViewer::viewMouseRelease(QMouseEvent *event)
+void QGraphicsSimulationViewer::viewMouseRelease(QMouseEvent * /*event*/)
 {
     _draggingTranslate = false;
     _draggingRotate = false;
@@ -405,8 +409,6 @@ void QGraphicsSimulationViewer::zoomExtents()
  */
 void QGraphicsSimulationViewer::_fitInView(const QRectF &targetView)
 {
-    QRectF viewSize = _viewer->viewport()->rect();
-
     //double scale = 1/std::min(viewSize.width()/targetView.width(), viewSize.height()/targetView.height());
     double scale = std::min(width()*0.9/targetView.width(), height()*0.9/targetView.height());
 
@@ -418,7 +420,7 @@ void QGraphicsSimulationViewer::_fitInView(const QRectF &targetView)
     _viewer->centerOn(targetView.center());
 }
 
-void QGraphicsSimulationViewer::resizeEvent(QResizeEvent *event)
+void QGraphicsSimulationViewer::resizeEvent(QResizeEvent * /*event*/)
 {
 }
 

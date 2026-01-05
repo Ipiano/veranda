@@ -1,7 +1,7 @@
 #include "default_robot_loader.h"
 #include <QDebug>
 
-QVector<WorldObject *> DefaultRobotLoader::loadFile(QString filePath, QMap<QString, WorldObjectComponent_Factory_If *> plugins)
+QVector<WorldObject *> DefaultRobotLoader::loadFile(QString /*filePath*/, QMap<QString, WorldObjectComponent_Factory_If *> plugins)
 {
     qDebug() << "Building default robots......................................";
     WorldObject* robot1 = makeDiffDriveBot(plugins);

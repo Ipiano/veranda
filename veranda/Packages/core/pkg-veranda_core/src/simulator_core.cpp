@@ -188,10 +188,10 @@ void SimulatorCore::joystickButtonDown(int button, QString channel)
 
     joymsg joystick = initJoystick(channel);
 
-    if(joystick._message->buttons.size() <= button)
-        joystick._message->buttons.resize(button+1);
+    if(joystick._message->buttons.size() <= static_cast<size_t>(button))
+        joystick._message->buttons.resize(static_cast<size_t>(button)+1);
 
-    joystick._message->buttons[button] = 1;
+    joystick._message->buttons[static_cast<size_t>(button)] = 1;
 
     if(joystick._channel)
     {
@@ -205,10 +205,10 @@ void SimulatorCore::joystickButtonUp(int button, QString channel)
 
     joymsg joystick = initJoystick(channel);
 
-    if(joystick._message->buttons.size() <= button)
-        joystick._message->buttons.resize(button+1);
+    if(joystick._message->buttons.size() <= static_cast<size_t>(button))
+        joystick._message->buttons.resize(static_cast<size_t>(button)+1);
 
-    joystick._message->buttons[button] = 0;
+    joystick._message->buttons[static_cast<size_t>(button)] = 0;
 
     if(joystick._channel)
     {

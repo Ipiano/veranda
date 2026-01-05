@@ -168,7 +168,7 @@ public:
      * \brief Captures the event on close and forwards it as a signal
      * \param[in] e The close event
      */
-    void closeEvent(QCloseEvent * e)
+    void closeEvent(QCloseEvent * /*e*/) override
     {
         emit joystickClosed();
     }

@@ -75,9 +75,8 @@ target_compile_definitions(default_robot_loader_plugin
 
 target_compile_options(default_robot_loader_plugin
     PRIVATE
-        $<$<CXX_COMPILER_ID:GNU>:-Wall>
-        $<$<CXX_COMPILER_ID:Clang>:-Wall>
-        $<$<CXX_COMPILER_ID:MSVC>:/W4>
+        $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wall -Wextra -Werror>
+        $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
 )
 
 ## Pull in stuff exported from other packages

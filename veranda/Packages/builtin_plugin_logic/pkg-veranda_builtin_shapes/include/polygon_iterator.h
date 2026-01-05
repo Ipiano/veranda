@@ -52,6 +52,17 @@ public:
     PolygonIterator(const PolygonIterator& other) : _parentIter(other._parentIter), _index(other._index) {}
 
     /*!
+     * \brief Copy assignment operator
+     * \param[in] other PolygonIterator to copy
+     * \return Reference to this iterator
+     */
+    PolygonIterator& operator=(const PolygonIterator& other) {
+        _parentIter = other._parentIter;
+        _index = other._index;
+        return *this;
+    }
+
+    /*!
      * \brief Equality check; returns true when both the parent iterators are equal and the coodinate indexes are equal
      * \param[in] other PolygonIterator to compare
      * \return boolean
