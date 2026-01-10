@@ -10,6 +10,7 @@ This document proposes decoupling Veranda's component implementations from direc
 - ✅ **Extensible**: Add new messages without modifying factory or existing code
 - ✅ **Decentralized**: Message implementations are self-contained in their own headers
 - ✅ **Selective compilation**: Only include backends and messages you need
+- ✅ **Optional message support**: Backends don't need to support all message types
 
 > **Related documents**:
 > - [TODO.md](TODO.md) - Phase 2.3 (Improve component testability)
@@ -282,6 +283,179 @@ public:
 
 ---
 
+### Optional Message Support
+
+Not all backends need to support all message types. The design handles this gracefully:
+
+#### Support Detection Trait
+
+```cpp
+// include/veranda/channels/backend_traits.h
+#pragma once
+#include <type_traits>
+
+namespace veranda::channels {
+
+/**
+ * @brief Trait to check if a backend supports a message type
+ *
+ * Specialize this in message implementation headers.
+ * Default is false (not supported).
+ */
+template<typename Backend, typename MessageInterface>
+struct SupportsMessage : std::false_type {};
+
+template<typename Backend, typename MessageInterface>
+inline constexpr bool SupportsMessage_v =
+    SupportsMessage<Backend, MessageInterface>::value;
+
+} // namespace veranda::channels
+```
+
+#### Updated Factory with Support Checking
+
+```cpp
+// include/veranda/channels/channel_factory.h
+
+namespace veranda::channels {
+
+/**
+ * @brief Exception thrown when message type not supported
+ */
+class UnsupportedMessageException : public std::runtime_error {
+public:
+    UnsupportedMessageException(const std::string& backend,
+                               const std::string& message)
+        : std::runtime_error("Backend '" + backend +
+                            "' does not support message type '" + message + "'") {}
+};
+
+class IChannelFactory {
+public:
+    virtual ~IChannelFactory() = default;
+
+    /**
+     * @brief Create a message instance
+     *
+     * Throws UnsupportedMessageException if backend doesn't support this message.
+     * This indicates a programming error (forgot to include implementation header)
+     * or intentional lack of support.
+     */
+    template<typename MessageInterface>
+    std::unique_ptr<MessageInterface> createMessage() {
+        return createMessageImpl<MessageInterface>();
+    }
+
+    /**
+     * @brief Create a publisher
+     */
+    template<typename MessageInterface>
+    std::unique_ptr<IPublisher<MessageInterface>>
+    createPublisher(const std::string& topic) {
+        return createPublisherImpl<MessageInterface>(topic);
+    }
+
+    /**
+     * @brief Create a subscriber
+     */
+    template<typename MessageInterface>
+    std::unique_ptr<ISubscriber<MessageInterface>>
+    createSubscriber(const std::string& topic,
+                    typename ISubscriber<MessageInterface>::Callback callback) {
+        return createSubscriberImpl<MessageInterface>(topic, std::move(callback));
+    }
+
+    /**
+     * @brief Check if backend supports a message type
+     *
+     * Use this for optional features. For required messages, just call
+     * createMessage() and let it throw if unsupported.
+     */
+    template<typename MessageInterface>
+    static constexpr bool supportsMessage() noexcept {
+        return SupportsMessage_v<std::remove_pointer_t<decltype(this)>,
+                                 MessageInterface>;
+    }
+
+protected:
+    // Default implementations throw - overridden by specializations
+    template<typename MessageInterface>
+    std::unique_ptr<MessageInterface> createMessageImpl() {
+        throw UnsupportedMessageException(
+            typeid(*this).name(),
+            typeid(MessageInterface).name()
+        );
+    }
+
+    template<typename MessageInterface>
+    std::unique_ptr<IPublisher<MessageInterface>>
+    createPublisherImpl(const std::string& topic) {
+        throw UnsupportedMessageException(
+            typeid(*this).name(),
+            typeid(MessageInterface).name()
+        );
+    }
+
+    template<typename MessageInterface>
+    std::unique_ptr<ISubscriber<MessageInterface>>
+    createSubscriberImpl(const std::string& topic,
+                        typename ISubscriber<MessageInterface>::Callback callback) {
+        throw UnsupportedMessageException(
+            typeid(*this).name(),
+            typeid(MessageInterface).name()
+        );
+    }
+};
+
+} // namespace veranda::channels
+```
+
+#### Usage Patterns
+
+**For required messages (most common)**:
+```cpp
+void Lidar::connectChannels() {
+    // LaserScan is required - just create it
+    // Will throw UnsupportedMessageException if not supported
+    _publisher = _factory->createPublisher<ILaserScan>("/scan");
+}
+```
+
+**For optional features**:
+```cpp
+void Robot::configure(std::shared_ptr<IChannelFactory> factory) {
+    // Required sensors
+    setupLidar(factory);
+    setupOdometry(factory);
+
+    // Optional IMU - check support first
+    if (factory->supportsMessage<IIMU>()) {
+        setupIMU(factory);
+    } else {
+        useDeadReckoning();  // Fallback without IMU
+    }
+}
+```
+
+**In test code**:
+```cpp
+TEST_F(IMUTest, ReadsAcceleration) {
+    auto factory = std::make_shared<MockChannelFactory>();
+
+    // Skip test if mock backend doesn't support IMU
+    if (!factory->supportsMessage<IIMU>()) {
+        GTEST_SKIP() << "IMU not supported by mock backend";
+    }
+
+    auto imu = factory->createMessage<IIMU>();
+    testIMU(imu);
+}
+```
+
+> **See also**: [TODO_optional_message_support.md](TODO_optional_message_support.md) for detailed strategies
+
+---
+
 ## ROS2 Backend Implementation
 
 ### ROS2 Factory (Minimal!)
@@ -378,15 +552,20 @@ public:
 } // namespace veranda::messages::ros2
 
 // ============================================================================
-// Factory Specializations - Self-contained in this header!
+// Support Trait and Factory Specializations - Self-contained in this header!
 // ============================================================================
 
 namespace veranda::channels {
 
+// Declare that ROS2 backend supports LaserScan
+template<>
+struct SupportsMessage<ros2::Ros2ChannelFactory, messages::ILaserScan>
+    : std::true_type {};
+
 // Message creation specialization
 template<>
 inline std::unique_ptr<messages::ILaserScan>
-ros2::Ros2ChannelFactory::createMessage<messages::ILaserScan>()
+ros2::Ros2ChannelFactory::createMessageImpl<messages::ILaserScan>()
 {
     return std::make_unique<messages::ros2::Ros2LaserScan>();
 }
@@ -394,7 +573,7 @@ ros2::Ros2ChannelFactory::createMessage<messages::ILaserScan>()
 // Publisher creation specialization
 template<>
 inline std::unique_ptr<IPublisher<messages::ILaserScan>>
-ros2::Ros2ChannelFactory::createPublisher<messages::ILaserScan>(
+ros2::Ros2ChannelFactory::createPublisherImpl<messages::ILaserScan>(
     const std::string& topic)
 {
     return std::make_unique<ros2::Ros2Publisher<messages::ILaserScan>>(
@@ -404,7 +583,7 @@ ros2::Ros2ChannelFactory::createPublisher<messages::ILaserScan>(
 // Subscriber creation specialization
 template<>
 inline std::unique_ptr<ISubscriber<messages::ILaserScan>>
-ros2::Ros2ChannelFactory::createSubscriber<messages::ILaserScan>(
+ros2::Ros2ChannelFactory::createSubscriberImpl<messages::ILaserScan>(
     const std::string& topic,
     typename ISubscriber<messages::ILaserScan>::Callback callback)
 {
