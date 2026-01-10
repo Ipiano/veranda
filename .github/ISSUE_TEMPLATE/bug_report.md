@@ -16,12 +16,14 @@ A clear and concise description of what you expected to happen.
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
-**Desktop (please complete the following information):**
- - OS: [e.g. Ubuntu 16.04]
- - Version of ROS2: [Ardent, Bouncy...]
- - ROS2 Build: [Pre-built, built from source]
- - Veranda Build: [Pre-built, built from source]
- - Python version (if applicable)
+**Environment (please complete the following information):**
+ - OS: [e.g. Ubuntu 24.04, Windows 11]
+ - Version of ROS 2: [e.g. Jazzy Jalisco]
+ - Qt Version: [e.g. 5.15.2, 5.12.12]
+ - CMake Version: [e.g. 3.28]
+ - Python Version: [e.g. 3.9, 3.11]
+ - Build Type: [Debug, Release]
+ - Compiler: [e.g. GCC 13, MSVC 2019]
 
 **Additional context**
 Add any other context about the problem here.
