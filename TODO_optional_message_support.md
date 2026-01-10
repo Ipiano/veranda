@@ -322,9 +322,9 @@ try {
 
 ---
 
-### Strategy 4: Hybrid Approach (Recommended)
+### Strategy 4: Simplified Approach (Recommended)
 
-Combine traits for compile-time checking with runtime support detection.
+Combine traits for compile-time checking with a single create method that throws if unsupported.
 
 #### Implementation
 
@@ -334,51 +334,37 @@ Combine traits for compile-time checking with runtime support detection.
 namespace veranda::channels {
 
 /**
- * @brief Factory with both compile-time and runtime checks
+ * @brief Factory with trait-based support detection
  */
 class IChannelFactory {
 public:
     /**
      * @brief Create message (throws if not supported)
+     *
+     * If the backend doesn't support this message type, throws
+     * UnsupportedMessageException. This indicates a programming error
+     * (forgot to include implementation header) or misconfiguration.
      */
     template<typename MessageInterface>
     std::unique_ptr<MessageInterface> createMessage() {
-        // For development: compile-time warning if not supported
-        if constexpr (!SupportsMessage_v<std::remove_pointer_t<decltype(this)>,
-                                         MessageInterface>) {
-            // This generates a warning but still compiles
-            [[deprecated("Message type not supported by this backend")]]
-            auto warning = 0;
-            (void)warning;
-        }
-
         return createMessageImpl<MessageInterface>();
     }
 
     /**
-     * @brief Try to create message, returns nullptr if not supported
-     */
-    template<typename MessageInterface>
-    std::unique_ptr<MessageInterface> tryCreateMessage() noexcept {
-        if constexpr (SupportsMessage_v<std::remove_pointer_t<decltype(this)>,
-                                        MessageInterface>) {
-            return createMessageImpl<MessageInterface>();
-        } else {
-            return nullptr;
-        }
-    }
-
-    /**
      * @brief Check if message type is supported
+     *
+     * Use this for optional features or when you need to check support
+     * before attempting to create. For required messages, just call
+     * createMessage() and let it throw if there's a problem.
      */
     template<typename MessageInterface>
-    constexpr bool supportsMessage() const noexcept {
+    static constexpr bool supportsMessage() noexcept {
         return SupportsMessage_v<std::remove_pointer_t<decltype(this)>,
                                  MessageInterface>;
     }
 
 protected:
-    // Default throws
+    // Default implementation throws
     template<typename MessageInterface>
     std::unique_ptr<MessageInterface> createMessageImpl() {
         throw UnsupportedMessageException(
@@ -399,46 +385,44 @@ protected:
 
 auto factory = std::make_shared<Ros2ChannelFactory>(node);
 
-// Pattern 1: Check support first (runtime)
+// Pattern 1: Required message - just create (throws if missing)
+auto scan = factory->createMessage<ILaserScan>();  // Must exist
+_publisher->publish(*scan);
+
+// Pattern 2: Optional feature - check support first
 if (factory->supportsMessage<IIMU>()) {
     auto imu = factory->createMessage<IIMU>();
+    setupIMU(imu);
 } else {
-    // Fall back to different sensor
+    // IMU not supported, use alternative navigation
+    useAlternativeNavigation();
 }
 
-// Pattern 2: Try create (runtime, no exceptions)
-auto imu = factory->tryCreateMessage<IIMU>();
-if (imu) {
-    // Use it
-} else {
-    // Not supported
+// Pattern 3: Test code - skip if not supported
+if (!factory->supportsMessage<IIMU>()) {
+    GTEST_SKIP() << "IMU not supported by this backend";
 }
+auto imu = factory->createMessage<IIMU>();
+testIMU(imu);
 
-// Pattern 3: Compile-time check
-if constexpr (factory->supportsMessage<ILaserScan>()) {
+// Pattern 4: Compile-time check (zero runtime overhead)
+if constexpr (Ros2ChannelFactory::supportsMessage<ILaserScan>()) {
     auto scan = factory->createMessage<ILaserScan>();
     // Compiler knows this branch will execute
-}
-
-// Pattern 4: Just create (throws if not supported)
-try {
-    auto scan = factory->createMessage<ILaserScan>();  // OK
-    auto imu = factory->createMessage<IIMU>();          // Throws
-} catch (const UnsupportedMessageException& e) {
-    // Handle error
 }
 ```
 
 **Pros**:
-- ✅ Flexibility: choose compile-time or runtime checking
-- ✅ `tryCreateMessage()` for graceful handling
-- ✅ `supportsMessage()` for querying support
-- ✅ `createMessage()` throws with clear error
-- ✅ Compile-time warnings in debug builds
+- ✅ Simple API: just `createMessage()` and `supportsMessage()`
+- ✅ Clear semantics: unsupported message = error
+- ✅ No nullable returns to check everywhere
+- ✅ Use `supportsMessage()` only when you need optional behavior
+- ✅ Compile-time checks available with `if constexpr`
 
 **Cons**:
-- Slightly more complex API
-- Need to choose which method to use
+- Need exception handling for unsupported messages (but that's a bug anyway)
+
+**Design philosophy**: If you're calling `createMessage<IIMU>()` but didn't include the IMU implementation header, that's a **programming error**, not a condition to gracefully handle. Use `supportsMessage()` only for genuinely optional features.
 
 ---
 
@@ -599,50 +583,69 @@ void Component::configure(std::shared_ptr<IChannelFactory> factory) {
 
 ## Recommended Approach
 
-**Use the Hybrid Strategy (Strategy 4)** with these guidelines:
+**Use the Simplified Strategy (Strategy 4)** with these guidelines:
 
-### For Production Code
+### For Required Messages (Most Common)
 ```cpp
-// Prefer runtime checks for robustness
-if (factory->supportsMessage<IIMU>()) {
-    auto imu = factory->createMessage<IIMU>();
-    setupIMU(imu);
-} else {
-    // Gracefully degrade or use alternative
-    useAlternativeNavigation();
-}
-```
-
-### For Test Code
-```cpp
-// Use tryCreateMessage for optional features
-auto imu = factory->tryCreateMessage<IIMU>();
-if (imu) {
-    // Test IMU functionality
-    testIMU(imu);
-} else {
-    // Skip IMU tests with mock backend
-    GTEST_SKIP() << "IMU not supported by this backend";
-}
-```
-
-### For Components with Required Messages
-```cpp
-// Use createMessage and let it throw if required message missing
 void Lidar::connectChannels() {
-    // LaserScan is required - throw if not supported
+    // LaserScan is required - just create it
+    // Will throw UnsupportedMessageException if not supported (programming error)
     _publisher = _factory->createPublisher<ILaserScan>("/scan");
+}
+
+void Lidar::worldTicked(double dt) {
+    auto msg = _factory->createMessage<ILaserScan>();
+    msg->setAngleMin(_minAngle);
+    _publisher->publish(*msg);
 }
 ```
 
 ### For Optional Features
 ```cpp
-// Use compile-time check for optional features
-if constexpr (SupportsMessage_v<Ros2ChannelFactory, IGPS>) {
-    #include "veranda/messages/ros2/gps.h"
-    // GPS code only compiled if supported
+void Robot::configure(std::shared_ptr<IChannelFactory> factory) {
+    // Required sensors - will throw if missing
+    setupLidar(factory);
+    setupOdometry(factory);
+
+    // Optional IMU - check support first
+    if (factory->supportsMessage<IIMU>()) {
+        setupIMU(factory);
+    } else {
+        // Use alternative navigation without IMU
+        useDeadReckoning();
+    }
 }
 ```
+
+### For Test Code
+```cpp
+TEST_F(IMUTest, ReadsAcceleration) {
+    auto factory = std::make_shared<MockChannelFactory>();
+
+    // Skip test if this backend doesn't support IMU
+    if (!factory->supportsMessage<IIMU>()) {
+        GTEST_SKIP() << "IMU not supported by mock backend";
+    }
+
+    auto imu = factory->createMessage<IIMU>();
+    testIMU(imu);
+}
+```
+
+### For Compile-Time Optimization
+```cpp
+// Only compile GPS code if ROS2 backend supports it
+if constexpr (Ros2ChannelFactory::supportsMessage<IGPS>()) {
+    #include "veranda/messages/ros2/gps.h"
+    // GPS code only compiled if supported
+    setupGPS();
+}
+```
+
+**Design Philosophy**:
+- **Required messages**: Just call `createMessage()` - let it throw if there's a problem
+- **Optional messages**: Check `supportsMessage()` before creating
+- No need for nullable returns or error handling everywhere
 
 ---
 
@@ -673,23 +676,28 @@ if constexpr (SupportsMessage_v<Ros2ChannelFactory, IGPS>) {
 // channels/channel_factory.h
 class IChannelFactory {
 public:
-    // Check support
-    template<typename T> constexpr bool supportsMessage() const noexcept;
+    // Check if backend supports a message type
+    template<typename MessageInterface>
+    static constexpr bool supportsMessage() noexcept;
 
-    // Try create (returns nullptr if unsupported)
-    template<typename T> std::unique_ptr<T> tryCreateMessage() noexcept;
-
-    // Create (throws if unsupported)
-    template<typename T> std::unique_ptr<T> createMessage();
-
-    // Try create publisher (returns nullptr if unsupported)
-    template<typename T> std::unique_ptr<IPublisher<T>>
-        tryCreatePublisher(const std::string& topic) noexcept;
+    // Create message (throws if unsupported - indicates programming error)
+    template<typename MessageInterface>
+    std::unique_ptr<MessageInterface> createMessage();
 
     // Create publisher (throws if unsupported)
-    template<typename T> std::unique_ptr<IPublisher<T>>
-        createPublisher(const std::string& topic);
+    template<typename MessageInterface>
+    std::unique_ptr<IPublisher<MessageInterface>>
+    createPublisher(const std::string& topic);
+
+    // Create subscriber (throws if unsupported)
+    template<typename MessageInterface>
+    std::unique_ptr<ISubscriber<MessageInterface>>
+    createSubscriber(const std::string& topic,
+                    typename ISubscriber<MessageInterface>::Callback callback);
 };
 ```
 
-This gives maximum flexibility - choose the right method based on whether the message is required or optional.
+**Simple and clear**:
+- For required messages: just call `createMessage()` - throws if there's a problem
+- For optional messages: check `supportsMessage()` first
+- No nullable returns or error handling everywhere
