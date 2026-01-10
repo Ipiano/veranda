@@ -1,78 +1,160 @@
 Making A Custom Plugin
 ======================
 
-Custom plugins should be ROS packages in the same workspace as the simulator package. The plugin's package.xml file should specify at least the following in order 
-to resolve build order.
+Custom plugins are ROS 2 packages built in the same workspace as Veranda. Plugins use CMake 3.28+ with ament_cmake for building and dependency management.
+
+Package Dependencies
+--------------------
+
+The plugin's ``package.xml`` file must specify dependencies to ensure correct build order. For a logic plugin (sensor, shape, or wheel):
 
 .. code-block:: xml
 
-	<depend>veranda_simulator</depend>
-	<depend>veranda_simulator_box2d</depend>
+    <?xml version="1.0"?>
+    <package format="3">
+      <name>my_custom_plugin</name>
+      <version>0.1.0</version>
+      <description>My custom Veranda plugin</description>
+      <maintainer email="you@example.com">Your Name</maintainer>
+      <license>TODO</license>
 
-Once Ament is aware of package dependencies, the CMakeLists file must be set up to find the required libraries and files and build the plugin correctly.
+      <buildtool_depend>ament_cmake</buildtool_depend>
 
-First, there are a number of definitions and values that need to be set in order to compile and link the Qt-Specific portions of the plugin
+      <build_depend>veranda_core_api</build_depend>
+      <build_depend>veranda_box2d</build_depend>
+      <build_depend>rclcpp</build_depend>
 
-.. code-block:: cmake
+      <exec_depend>rclcpp</exec_depend>
 
-	find_package(Qt5 REQUIRED COMPONENTS
-  	Core Gui
-	)
+      <export>
+        <build_type>ament_cmake</build_type>
+      </export>
+    </package>
 
-	set(CMAKE_INCLUDE_CURRENT_DIR ON)
-	set(CMAKE_AUTOMOC ON)
+For a Qt plugin wrapper, also add:
 
-	add_definitions(-DQT_PLUGIN)
-	add_definitions(-DQT_SHARED)
+.. code-block:: xml
 
-	include_directories( ${CMAKE_BINARY_DIR} )
+    <build_depend>veranda_qt_plugin_api</build_depend>
 
+CMakeLists.txt Configuration
+----------------------------
 
-In order to resolve dependencies for Box2D and the header files from the simulator, find\_package needs to be called for the associated packages. Then \lstinline|include_directories| needs to be called so the Qt MOC can resolve headers
-
-.. code-block:: cmake
-
-	find_package(veranda_simulator REQUIRED)
-	find_package(veranda_simulator_box2d REQUIRED)
-    
-	ament_export_dependencies(
-    		veranda_simulator
-    		veranda_simulator_box2d
-	)
-
-	include_directories(${veranda_simulator_api_INCLUDE_DIRS})
-	include_directories(${veranda_simulator_box2d_INCLUDE_DIRS})
-
-Next, any headers in the plugin containing the Q_OBJECT or other Q_* macros need to be preprocessed by the MOC
+Plugin CMakeLists.txt files use CMake 3.28+ with ament and the ``ament_target_dependencies`` function. Here's a complete example:
 
 .. code-block:: cmake
 
-	set(plugin_moc_hdrs a.h b.h ... z.h)
-	qt5_wrap_cpp(MOC_SRCS ${plugin_moc_hdrs})
+    cmake_minimum_required(VERSION 3.28)
 
-Finally, the plugin needs to be built as a shared library and linked against Qt Core libraries and the Box2D library.
+    project(my_custom_plugin
+        VERSION 0.1.0
+        LANGUAGES CXX
+    )
 
-.. code-block:: cmake
+    # C++17 standard
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+    set(CMAKE_CXX_EXTENSIONS OFF)
 
-	add_compile_options(-fPIC)
+    # Find ament and ROS 2 packages
+    find_package(ament_cmake REQUIRED)
+    find_package(veranda_core_api REQUIRED)
+    find_package(veranda_box2d REQUIRED)
+    find_package(rclcpp REQUIRED)
 
-	add_library([plugin name] SHARED ${CPP_SRCS} ${MOC_SRCS})
-	qt5_use_modules([plugin name] Core Gui)
+    # Find Qt 5 with modern imported targets
+    find_package(Qt5 5.12 REQUIRED COMPONENTS Core Gui)
 
-	ament_target_dependencies([plugin name]
-	"veranda_simulator_box2d"
-	"veranda_simulator_api"
-	)
+    # Enable Qt MOC
+    set(CMAKE_AUTOMOC ON)
+    set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-The last detail is that the plugin must be deployed in the directory above the simulator executable. This can be achieved by installing the plugin to 
-the lib directory of the workspace install
+    # Export dependencies for downstream packages
+    ament_export_dependencies(
+        veranda_core_api
+        veranda_box2d
+        rclcpp
+    )
 
-.. code-block:: cmake
+    ament_export_include_directories(include/${PROJECT_NAME})
+    ament_export_libraries(${PROJECT_NAME})
 
-	install(
-		TARGETS [plugin name]
-		DESTINATION lib
-	)
+    # Source files
+    set(SOURCES
+        src/my_plugin.cpp
+        src/my_component.cpp
+    )
+
+    set(HEADERS
+        include/my_plugin/my_plugin.h
+        include/my_plugin/my_component.h
+    )
+
+    # Create shared library
+    add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
+
+    # Set C++17 standard
+    target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
+
+    # Include directories with generator expressions
+    target_include_directories(${PROJECT_NAME}
+        PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+            $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
+        PRIVATE
+            ${CMAKE_CURRENT_BINARY_DIR}
+    )
+
+    # Add compile definitions for Qt plugin
+    target_compile_definitions(${PROJECT_NAME}
+        PRIVATE
+            QT_DEPRECATED_WARNINGS
+            QT_PLUGIN
+            QT_SHARED
+    )
+
+    # Link ROS dependencies using ament_target_dependencies
+    # This handles include paths and libraries automatically
+    ament_target_dependencies(${PROJECT_NAME}
+        PUBLIC
+            rclcpp
+            veranda_core_api
+            veranda_box2d
+    )
+
+    # Link Qt modules using target_link_libraries
+    # Qt is a pure CMake package, not an ament package
+    target_link_libraries(${PROJECT_NAME}
+        PUBLIC
+            Qt5::Core
+            Qt5::Gui
+    )
+
+    # Get plugin installation path from ament index
+    ament_index_get_resource(PLUGIN_PATH "veranda_plugin_path" "veranda_qt_frontend")
+
+    # Install plugin to discovered plugin directory
+    install(
+        TARGETS ${PROJECT_NAME}
+        DESTINATION ${PLUGIN_PATH}
+    )
+
+    # Install headers for downstream use
+    install(
+        DIRECTORY include/
+        DESTINATION include/${PROJECT_NAME}
+    )
+
+    # Finalize ament package
+    ament_package()
+
+Plugin Discovery
+----------------
+
+Veranda discovers plugins through the ament index. The plugin path is exposed as an ament index resource named ``"veranda_plugin_path"`` registered by the ``veranda_qt_frontend`` package.
+
+As shown in the CMakeLists.txt example above, use ``ament_index_get_resource()`` to get the plugin installation path, then install your plugin to that location.
+
+At runtime, Veranda scans all ``.so`` files in this directory and uses Qt's ``QPluginLoader`` to check for plugin compatibility. The loader attempts to load each library and verifies it implements the required plugin interfaces (``WorldObjectComponent_If`` for logic plugins, ``Object_Ui_If`` for Qt wrappers, etc.).
 
 A Note on ROS Communications
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
