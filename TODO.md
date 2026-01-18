@@ -76,7 +76,7 @@ The project was locked to ROS2 Ardent Apalone (2017), which is long EOL. Upgrade
   target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Core Qt5::Gui Qt5::Widgets)
   ```
 - [x] Update C++ standard from C++11 to C++17 (required for ROS2 Jazzy)
-- [ ] Fix plugin discovery path (`main.cpp:105-106`) to use proper ROS2 resource paths or ament index
+- [x] Fix plugin discovery path (`main.cpp:105-106`) to use proper ROS2 resource paths or ament index
 
 ---
 
