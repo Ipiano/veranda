@@ -40,14 +40,14 @@ jobs:
       run: |
         cd veranda
         source /opt/ros/jazzy/setup.bash
-        colcon build --symlink-install
+        colcon build --symlink-install --base-paths Packages
 
     - name: Run tests
       run: |
         cd veranda
         source /opt/ros/jazzy/setup.bash
         source install/setup.bash
-        colcon test --event-handlers console_direct+
+        colcon test --base-paths Packages --event-handlers console_direct+
 
     - name: Test results
       run: |
@@ -121,7 +121,7 @@ jobs:
         REM Force CMake to use Python 3.9 by explicitly passing Python3_EXECUTABLE.
         REM Without this, CMake may find Python 3.12 which lacks the catkin_pkg module.
         REM Disable desktop notifications to avoid Windows message handling errors in CI
-        colcon build --symlink-install --event-handlers console_direct+ desktop_notification- --cmake-args -DCMAKE_BUILD_TYPE=Release -DPython3_EXECUTABLE=C:\hostedtoolcache\windows\Python\3.9.13\x64\python.exe -DBUILD_TESTING=${{ matrix.build-testing }}
+        colcon build --base-paths Packages --symlink-install --event-handlers console_direct+ desktop_notification- --cmake-args -DCMAKE_BUILD_TYPE=Release -DPython3_EXECUTABLE=C:\hostedtoolcache\windows\Python\3.9.13\x64\python.exe -DBUILD_TESTING=${{ matrix.build-testing }}
 
     - name: Run tests
       if: matrix.build-testing == 'ON'
@@ -130,7 +130,7 @@ jobs:
         call C:\dev\jazzy\ros2-windows\local_setup.bat
         cd veranda
         call install\local_setup.bat
-        colcon test --event-handlers console_direct+ desktop_notification-
+        colcon test --base-paths Packages --event-handlers console_direct+ desktop_notification-
       continue-on-error: true
 
     - name: Test results

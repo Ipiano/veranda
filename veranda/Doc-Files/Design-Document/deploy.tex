@@ -3,15 +3,15 @@
 
 \chapter{Release -- Setup -- Deployment}
 \section{Deployment Information and Dependencies}
-At the time of this writing, there is no deployment available other than installing the full development environment. Following the steps defined in section \ref{sec:devenv} to get the development environment set up for your system.
+The project requires ROS 2 Jazzy Jalisco, Qt 5.12 or later, CMake 3.28+, and a C++17 compiler. See the README.md and User Manual for detailed installation instructions.
 
-In the future, we hope to have pre-made VM's, Docker Containers, and/or Binary packages available for easy installation.
+The project is built from source using the Colcon build system with ament\_cmake. GitHub Actions provides automated builds for Ubuntu 24.04 and Windows.
 
 \section{Setup Information}
 Once the development environment is set up, create a folder to be your ROS workspace. Within the workspace, create a \lstinline|src| folder. Within \lstinline|src|, clone the project repository.
 
 \subsection*{Building}
-In a terminal with a build environment (Any linux terminal, a VS2015 Tools terminal on Windows) \lstinline|source| (\lstinline|call| on Windows) the \lstinline|setup.bash/.bat| file appropriate for you system in your ROS installation folder. Now, from the workspace root, run the command \lstinline|ament build|. This will build the project.
+In a terminal \lstinline|source| (\lstinline|call| on Windows) the \lstinline|setup.bash/.bat| file for your ROS 2 Jazzy installation. On Ubuntu 24.04, this is typically \lstinline|/opt/ros/jazzy/setup.bash|. From the workspace root, run \lstinline|colcon build --symlink-install|. This will build the project.
 
 \subsection*{Running}
-To run the project, \lstinline|source|/\lstinline|call| the \lstinline|setup.bash/.bat| file in the \lstinline|install| subfolder of the workspace. Then, run \lstinline|ros2 run veranda veranda|
+To run the project, \lstinline|source|/\lstinline|call| the \lstinline|setup.bash/.bat| file in the \lstinline|install| subfolder of the workspace. Then, run \lstinline|ros2 run veranda_qt_frontend veranda|
