@@ -135,6 +135,33 @@ install(
   DESTINATION share/${PROJECT_NAME}/cmake
 )
 
+# Debug: Print installation details
+install(CODE "
+  message(STATUS \"========== VERANDA_BOX2D INSTALL DEBUG ==========\")
+  message(STATUS \"CMAKE_INSTALL_PREFIX: \${CMAKE_INSTALL_PREFIX}\")
+  message(STATUS \"Checking installed files in: \${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}\")
+
+  file(GLOB_RECURSE INSTALLED_FILES \"\${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/*\")
+  foreach(FILE \${INSTALLED_FILES})
+    message(STATUS \"  Installed: \${FILE}\")
+  endforeach()
+
+  set(CONFIG_FILE \"\${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/cmake/${PROJECT_NAME}Config.cmake\")
+  if(EXISTS \"\${CONFIG_FILE}\")
+    message(STATUS \"✓ Config file EXISTS: \${CONFIG_FILE}\")
+  else()
+    message(WARNING \"✗ Config file NOT FOUND: \${CONFIG_FILE}\")
+  endif()
+
+  set(TARGETS_FILE \"\${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/cmake/${PROJECT_NAME}Targets.cmake\")
+  if(EXISTS \"\${TARGETS_FILE}\")
+    message(STATUS \"✓ Targets file EXISTS: \${TARGETS_FILE}\")
+  else()
+    message(WARNING \"✗ Targets file NOT FOUND: \${TARGETS_FILE}\")
+  endif()
+  message(STATUS \"=================================================\")
+")
+
 ament_export_targets(${PROJECT_NAME}Targets HAS_LIBRARY_TARGET)
 
 ament_package()

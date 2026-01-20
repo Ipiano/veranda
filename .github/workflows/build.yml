@@ -40,7 +40,7 @@ jobs:
       run: |
         cd veranda
         source /opt/ros/jazzy/setup.bash
-        colcon build --symlink-install --cmake-args -DCMAKE_FIND_DEBUG_MODE=ON
+        colcon build --symlink-install --cmake-args -DCMAKE_FIND_DEBUG_MODE=ON --debug-find --trace-expand
 
     - name: Run tests
       run: |
