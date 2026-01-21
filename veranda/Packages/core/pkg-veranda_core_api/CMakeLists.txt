@@ -24,33 +24,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 ## Find required ROS packages
 find_package(ament_cmake REQUIRED)
-
-# Debug: Print search paths before finding veranda_box2d
-message(STATUS "========== VERANDA_CORE_API FIND DEBUG ==========")
-message(STATUS "About to find_package(veranda_box2d)")
-message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
-message(STATUS "CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
-
-# Check if expected config file exists
-foreach(PREFIX ${CMAKE_PREFIX_PATH})
-  set(EXPECTED_CONFIG "${PREFIX}/share/veranda_box2d/cmake/veranda_box2dConfig.cmake")
-  if(EXISTS "${EXPECTED_CONFIG}")
-    message(STATUS "✓ Found config at: ${EXPECTED_CONFIG}")
-  else()
-    message(STATUS "✗ Not found at: ${EXPECTED_CONFIG}")
-  endif()
-
-  # List what's actually in the share directory
-  if(EXISTS "${PREFIX}/share/veranda_box2d")
-    message(STATUS "Contents of ${PREFIX}/share/veranda_box2d:")
-    file(GLOB_RECURSE BOX2D_FILES "${PREFIX}/share/veranda_box2d/*")
-    foreach(FILE ${BOX2D_FILES})
-      message(STATUS "  ${FILE}")
-    endforeach()
-  endif()
-endforeach()
-message(STATUS "=================================================")
-
 find_package(veranda_box2d REQUIRED)
 find_package(rclcpp REQUIRED)
 

@@ -25,6 +25,9 @@ jobs:
           qtbase5-dev \
           qtdeclarative5-dev \
           libqt5svg5-dev
+        # Pin colcon-ros to 0.5.0-100 to work around CMAKE_PREFIX_PATH bug
+        # in 0.5.0+upstream-1 (https://github.com/colcon/colcon-ros/issues/165)
+        sudo apt-get install -y --allow-downgrades python3-colcon-ros=0.5.0-100
 
     - name: Initialize rosdep
       run: |
@@ -40,7 +43,7 @@ jobs:
       run: |
         cd veranda
         source /opt/ros/jazzy/setup.bash
-        colcon build --symlink-install --cmake-args -DCMAKE_FIND_DEBUG_MODE=ON --debug-find --trace-expand
+        colcon build --symlink-install
 
     - name: Run tests
       run: |
