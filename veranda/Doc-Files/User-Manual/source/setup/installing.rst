@@ -1,53 +1,126 @@
 Setting up Veranda
 ==================
 
-Getting set up to use Veranda is, at the moment, somewhat of an in-depth endeavor. It requires first installing ROS2, and then downloading the source for Verand and building it. A one-stop install is coming soon to Operating Systems near you!
+This guide covers installing ROS 2 and building Veranda from source.
 
-Installing ROS2
+Installing ROS 2
 ---------------
 
-Veranda was developed using the very first version of ROS2: Ardent Apalone. Instructions for downloading and installing that can be found on their Github at `this address`_.
+Veranda targets ROS 2 Jazzy Jalisco. Follow the instructions in the `ROS 2 Installation Guide`_ to get a working ROS 2 install in your environment.
 
-.. _this address: https://github.com/ros2/ros2/wiki/Installation
+.. _ROS 2 Installation Guide: https://docs.ros.org/en/jazzy/Installation.html
 
-You are welcome to install either by building the source or downloading the pre-built binaries for your system. Regardless of if you install from source or binaries, you will need to follow the instructions on the "building from source" page for installing Qt in order to get Qt 5.10 on your system.
+**Platform Notes:**
+
+* **Ubuntu 24.04** - Primary development platform with native ROS 2 Jazzy packages
+* **Ubuntu 22.04** - Supported, but requires building ROS 2 from source
+* **Windows** - Supported via ROS 2 Jazzy for Windows with MSVC compiler
+
+Installing Veranda Dependencies
+--------------------------------
+
+On Ubuntu 24.04, install the Qt development libraries:
+
+.. code-block:: bash
+
+    sudo apt-get update
+    sudo apt-get install -y \
+      qtbase5-dev \
+      qtdeclarative5-dev \
+      libqt5svg5-dev
+
+The project requires Qt 5.12 or later. Qt 5.15.2 is recommended and is available in Ubuntu 24.04's repositories.
+
+**Note:** Tools like ``colcon`` and ``rosdep`` should already be installed as part of your ROS 2 setup.
 
 Building Veranda
 ----------------
 
-Building the Veranda project is fairly simple once ROS2 is installed. First, you must make yourself a workspace, in which all of your work will be stored. This workspace is simply a directory with a specific structure.
+Building the Veranda project is straightforward once ROS 2 is installed. First, you need to create a workspace, which is a directory with a specific structure for ROS 2 packages.
 
-NOTE: A couple of the steps below state that you should 'source the ROS environment' or 'source the project environment.' Doing this is described in the ROS2 documentation, but we have provided some short examples at the :ref:`bottom of the page <sec-sourcing>`. (Just in case you didn't see the online examples)
+NOTE: The steps below reference 'sourcing the ROS environment' and 'sourcing the workspace environment.' See the :ref:`bottom of the page <sec-sourcing>` for detailed examples.
 
-    #. Make a workspace directory
-    #. Within that directory, make a directory called ``src``
-    #. ``cd`` into the ``src`` directory, and execute ``git clone https://github.com/roboscienceorg/veranda.git``
+Creating and Building the Workspace
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Once your workspace is set up and the project has been cloned into the ``src`` directory, we can build the project
+.. code-block:: bash
 
-    #. ``cd`` into the root workspace directory
-    #. Source the ROS2 environment
-    #. Execute the command ``ament build``
-    
-Now the project should be built! Running the project now is easy
+    # Create workspace structure
+    mkdir -p ~/veranda_ws/src
+    cd ~/veranda_ws/src
 
-    #. ``cd`` into the root workspace directory
-    #. Source the ROS2 environment
-    #. Source the workspace environment
-    #. Execute the command ``ros2 run veranda veranda``
+    # Clone the Veranda repository
+    git clone https://github.com/roboscienceorg/veranda.git
 
-At this point, the application should open, and you can start simulating robots to your heart's content. To make sure your system is set up correctly, we've provided a couple of :ref:`demos <sec-demos>` for you.
+    # Return to workspace root
+    cd ~/veranda_ws
+
+    # Install ROS dependencies
+    rosdep install --from-paths src/veranda/veranda/Packages --ignore-src -r -y
+
+    # Source ROS 2 Jazzy environment
+    source /opt/ros/jazzy/setup.bash
+
+    # Build the workspace
+    colcon build --symlink-install
+
+Now the project is built! You can verify the build succeeded by running tests:
+
+.. code-block:: bash
+
+    source install/setup.bash
+    colcon test
+    colcon test-result --verbose
+
+Running Veranda
+^^^^^^^^^^^^^^^
+
+To run the Veranda Qt frontend:
+
+.. code-block:: bash
+
+    # From the workspace root
+    source install/setup.bash
+    ros2 run veranda_qt_frontend veranda
+
+At this point, the application should open, and you can start simulating robots. To verify your setup is correct, try the :ref:`demos <sec-demos>`.
+
+**Windows Note:** If you encounter Python compatibility issues on Windows, you may need to specify the correct Python interpreter when building:
+
+.. code-block:: bash
+
+    colcon build --symlink-install --cmake-args -DPython3_EXECUTABLE=/path/to/correct/python.exe
 
 .. _sec-sourcing:
 
 What is 'Sourcing your environment'?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Sourcing the ROS2 environment or your workspace environment sets up system variables that are specific to your terminal instance. These variables can contain all sorts of information. In ROS2, it contains all of the paths to the header files and binaries that you can link to. When you source your workspace, it stores the location of your built project files so that they can be run by ROS2.
+Sourcing the ROS 2 environment or your workspace environment sets up system variables specific to your terminal instance. In ROS 2, these variables contain paths to header files, binaries, and packages. When you source your workspace, it makes your built packages available for ROS 2 to find and run.
 
-Sourcing is different on different systems. In Linux, the command to run is ``source``; on OSX, it's merely `.`, and on Windows, it is `call`. We will provide examples here for Linux if you installed the pre-built binaries, and if you are on a different OS, you will need to hunt down the specific filenames to source for your system. If you built ROS from source, then you will need to source the workspace in which you built ROS instead. (Hint: Sourcing a workspace will use the same file on all three; it's just the ROS environment that might be different)
+Sourcing differs by operating system:
 
-Sourcing the ROS2 environment: ``source /opt/ros/ardent/local_setup.bash``
-Sourcing a ROS2 workspace: ``source [path/to/workspace]/install/local_setup.bash``
+* **Linux**: Use ``source`` command
+* **macOS**: Use ``source`` command (or ``.`` shorthand)
+* **Windows**: Use ``call`` command
 
-You may notice that in both instances, there are files ``local_setup.bash`` and ``setup.bash``. Sourcing the second one will source all other files that were sourced before it was created. So, after you build Veranda, you can source ``setup.bash`` in the workspace it was built in to source both the ROS environment and the workspace environment! (NOTE: On Windows [and possibly OSX], this will NOT source the install scripts for OpenSplice, or whatever RMW implementation you download. That should always be done after sourcing the workspace)
+Examples for Ubuntu 24.04 with ROS 2 Jazzy installed from binaries:
+
+.. code-block:: bash
+
+    # Source the ROS 2 Jazzy environment
+    source /opt/ros/jazzy/setup.bash
+
+    # Source a ROS 2 workspace
+    source ~/veranda_ws/install/setup.bash
+
+Each directory has two setup files: ``local_setup.bash`` and ``setup.bash``. The ``local_setup.bash`` file only sets up that specific environment, while ``setup.bash`` also sources any environments that were active when it was created.
+
+**Best Practice**: After building your workspace, you can source just ``setup.bash`` in the workspace to automatically source both the ROS 2 environment and your workspace:
+
+.. code-block:: bash
+
+    # This sources both ROS 2 Jazzy and your workspace
+    source ~/veranda_ws/install/setup.bash
+
+If you built ROS 2 from source instead of using pre-built binaries, source your ROS 2 build workspace instead of ``/opt/ros/jazzy``.

@@ -123,7 +123,18 @@ install(
 
 install(
   TARGETS ${PROJECT_NAME}
-  DESTINATION ${LIB_INSTALL_DIR}
+  EXPORT ${PROJECT_NAME}Targets
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
 )
+
+install(
+  EXPORT ${PROJECT_NAME}Targets
+  FILE ${PROJECT_NAME}Targets.cmake
+  DESTINATION share/${PROJECT_NAME}/cmake
+)
+
+ament_export_targets(${PROJECT_NAME}Targets HAS_LIBRARY_TARGET)
 
 ament_package()

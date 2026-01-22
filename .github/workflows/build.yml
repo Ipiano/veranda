@@ -25,6 +25,10 @@ jobs:
           qtbase5-dev \
           qtdeclarative5-dev \
           libqt5svg5-dev
+        # Install colcon-ros 0.4.1 to work around CMAKE_PREFIX_PATH bug
+        # in newer versions (https://github.com/colcon/colcon-ros/issues/165)
+        sudo apt-get remove -y python3-colcon-ros || true
+        pip install --break-system-packages colcon-ros==0.4.1
 
     - name: Initialize rosdep
       run: |
