@@ -40,14 +40,15 @@ jobs:
       run: |
         cd veranda
         source /opt/ros/jazzy/setup.bash
-        # Use --merge-install so all packages share a single install prefix.
-        # Without this, colcon prepends each package's install path to CMAKE_PREFIX_PATH
-        # using the OS path separator (':' on Linux), but the apt-installed ROS jazzy
-        # setup.bash already populates CMAKE_PREFIX_PATH with semicolon-separated paths.
-        # The resulting mixed-separator string is not correctly parsed by cmake, causing
+        # The apt-installed /opt/ros/jazzy/setup.bash sets CMAKE_PREFIX_PATH with
+        # semicolons, but cmake on Linux expects the CMAKE_PREFIX_PATH env variable
+        # to use colons (the native path separator). When colcon then prepends each
+        # package's install prefix using colons, the result is a mixed-separator
+        # string that cmake cannot correctly parse for Config module searches, causing
         # find_package() to fail for packages built earlier in the same workspace.
-        # --merge-install avoids this by keeping CMAKE_PREFIX_PATH as a single path.
-        colcon build --symlink-install --merge-install
+        # Normalise to colons before invoking colcon.
+        export CMAKE_PREFIX_PATH=$(echo "$CMAKE_PREFIX_PATH" | tr ';' ':')
+        colcon build --symlink-install
 
     - name: Run tests
       run: |
