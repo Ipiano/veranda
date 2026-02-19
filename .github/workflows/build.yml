@@ -40,14 +40,13 @@ jobs:
       run: |
         cd veranda
         source /opt/ros/jazzy/setup.bash
-        # The apt-installed /opt/ros/jazzy/setup.bash sets CMAKE_PREFIX_PATH with
-        # semicolons, but cmake on Linux expects the CMAKE_PREFIX_PATH env variable
-        # to use colons (the native path separator). When colcon then prepends each
-        # package's install prefix using colons, the result is a mixed-separator
-        # string that cmake cannot correctly parse for Config module searches, causing
-        # find_package() to fail for packages built earlier in the same workspace.
-        # Normalise to colons before invoking colcon.
-        export CMAKE_PREFIX_PATH=$(echo "$CMAKE_PREFIX_PATH" | tr ';' ':')
+        echo "=== DIAGNOSTICS ==="
+        echo "cmake: $(which cmake) -- $(cmake --version | head -1)"
+        echo "python3: $(which python3) -- $(python3 --version)"
+        echo "CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}"
+        echo "AMENT_PREFIX_PATH=${AMENT_PREFIX_PATH}"
+        echo "PYTHONPATH=${PYTHONPATH}"
+        echo "==================="
         colcon build --symlink-install
 
     - name: Run tests
