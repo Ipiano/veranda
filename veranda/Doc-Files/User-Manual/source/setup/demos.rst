@@ -126,7 +126,7 @@ Here we've outlined a number of demos that you can run right after installing Ve
 Demo 1: Driving GPS Turtle in a Figure-8
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    * Terminal 1: ``ros2 run veranda veranda``
+    * Terminal 1: ``ros2 run veranda_qt_frontend veranda``
     * Load the Differential-w-GPS robot into the toolbox
     * Add that robot to the simulation
     * Start the simulation
@@ -136,7 +136,7 @@ Demo 1: Driving GPS Turtle in a Figure-8
 Demo 2: Driving Lidar Turtle with the Virtual Joystick
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    * Terminal 1: ``ros2 run veranda veranda``
+    * Terminal 1: ``ros2 run veranda_qt_frontend veranda``
     * Load the Differential-w-Lidar-Touch robot into the toolbox
     * Add that robot to the simulation
     * Start the simulation
@@ -150,7 +150,7 @@ Demo 2: Driving Lidar Turtle with the Virtual Joystick
 Demo 3: Driving Ackermann Bot with the Virtual Joystick
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    * Terminal 1: ``ros2 run veranda veranda``
+    * Terminal 1: ``ros2 run veranda_qt_frontend veranda``
     * Load the Ackermann-w-Lidar robot into the toolbox
     * Add that robot to the simulation
     * Start the simulation
@@ -169,7 +169,7 @@ Bonus Demo! Driving Ackermann Bot with a Real, Live Joystick
     * Terminal 1: ``python3 ./src/veranda/veranda/Demo/Scripts/linux_joy_reader.py [insert device here]``
     * Try devices until one works, and the terminal prints stuff when you move the joystick
     * Terminal 2: ``python3 ./src/veranda/veranda/Demo/Scripts/joystick_ackermann.py [device] robot1``
-    * Terminal 3: ``ros2 run veranda veranda``
+    * Terminal 3: ``ros2 run veranda_qt_frontend veranda``
     * Load the Ackermann-w-Lidar robot into the toolbox
     * Add that robot to the simulation
     * Start the simulation

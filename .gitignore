@@ -20,6 +20,10 @@ msg/_*.py
 *moc_*
 *ui_*
 
+# Colcon generated directories
+build/
+install/
+log/
 
 # Auto-Generated Makefiles from Qt Creator
 *Makefile.*
