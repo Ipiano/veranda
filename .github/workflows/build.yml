@@ -36,14 +36,6 @@ jobs:
         cd veranda
         rosdep install --from-paths Packages --ignore-src -r -y
 
-    - name: Setup CMake
-      uses: jwlawson/actions-setup-cmake@v2
-      with:
-        # CMake 3.31 has a regression where semicolon-separated CMAKE_PREFIX_PATH env
-        # variables are not properly split, causing find_package() to fail for
-        # colcon-built packages within the same workspace. The fix is present in 4.0+.
-        cmake-version: '4.0.x'
-
     - name: Build workspace
       run: |
         cd veranda
