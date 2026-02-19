@@ -39,6 +39,11 @@ jobs:
     - name: Build workspace
       run: |
         cd veranda
+        # Use apt-installed cmake (3.28) instead of runner's pre-installed cmake (3.31+).
+        # CMake 3.31 has a regression where semicolon-separated CMAKE_PREFIX_PATH env
+        # variables are not properly split, causing find_package() to fail for
+        # colcon-built packages within the same workspace.
+        export PATH=/usr/bin:$PATH
         source /opt/ros/jazzy/setup.bash
         colcon build --symlink-install
 
